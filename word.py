@@ -1,3 +1,30 @@
+import metadata
+import time
+
+class Words:
+    def __init__(self):
+        self.baldey_word_set = metadata.baldey_word_set()
+        self.mald_word_set = metadata.mald_word_set()
+        self.baldey_data = metadata.baldey_word_data()
+        self.mald_data = metadata.mald_word_data()
+        self.baldey_header = metadata.baldey_header()
+        self.mald_header = metadata.mald_word_header()
+
+    def make_words(self):
+        self.words = []
+        for line in self.baldey_data:
+            word = line[9]
+            d = metadata.word_to_filenames(word, dataset_name = 'baldey')
+            d['header'] = self.baldey_header
+            d['metadata'] = line
+            self.words.append(Word(**d))
+        for line in self.mald_data:
+            word = line[0]
+            d = metadata.word_to_filenames(word,dataset_name = 'mald')
+            d['header'] = self.mald_header
+            d['metadata'] = line
+            self.words.append(Word(**d))
+
 class Word:
     def __init__(self, word, audio_filename, textgrid_filename, 
         metadata, header):
