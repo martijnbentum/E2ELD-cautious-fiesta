@@ -166,8 +166,8 @@ def filename_to_word(filename):
     word = filename.split('/')[-1].split('.')[0].lower()
     return word
 
-def word_to_filenames(word, dataset = 'baldey'):
-    if dataset == 'baldey':
+def word_to_filenames(word, dataset_name = 'baldey'):
+    if dataset_name == 'baldey':
         fn_audio = locations.fn_baldey_audio
         fn_textgrids = locations.fn_baldey_textgrids
     else:
@@ -183,4 +183,18 @@ def word_to_filenames(word, dataset = 'baldey'):
             d['textgrid_filename'] = f
             break
     return d
+
+def word_to_info(word, dataset_name = 'baldey', data = None):
+    if dataset_name == 'baldey': 
+        header = baldey_header()
+        metadata = get_baldey_word_metadata(word, data = data)
+    else: 
+        header = mald_word_header()
+        metadata = get_mald_word_metadata(word, data = data)
+    d = word_to_filenames(word, dataset_name) 
+    d['header'] = header
+    d['metadata'] = metadata
+    return d
+
+    
 
