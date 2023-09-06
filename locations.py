@@ -18,3 +18,5 @@ mald_word_data_filename = mald + 'MALD1_ItemData.txt'
 mald_response_data_filename = mald + 'ResponseData.txt'
 mald_subject_data_filename = mald + 'MALD1_SubjectData.txt'
 mald_wordset_filename = mald + 'word_set.txt'
+
+word_to_filenames_dict = '../word_to_filenames_dict.json'
