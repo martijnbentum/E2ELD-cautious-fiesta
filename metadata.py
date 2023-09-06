@@ -4,7 +4,7 @@ datasets:
 baldey
 mald
 '''
-
+import json
 import locations
 
 def get_mald_word_metadata(word, data = None):
@@ -196,5 +196,19 @@ def word_to_info(word, dataset_name = 'baldey', data = None):
     d['metadata'] = metadata
     return d
 
+def _make_word_to_filenames_dict():
+    d = {'baldey':{},'mald':{}}
+    for word in baldey_word_set():
+        d['baldey'][word] = word_to_filenames(word, dataset_name = 'baldey')
+    for word in mald_word_set():
+        d['mald'][word] = word_to_filenames(word, dataset_name = 'mald')
+    with open(locations.word_to_filenames_dict,'w') as fout:
+        json.dump(d,fout)
+    
+def word_to_filenames_dict():
+    with open(locations.word_to_filenames_dict) as fin:
+        d = json.load(fin)
+    return d
+        
     
 
