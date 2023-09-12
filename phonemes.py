@@ -10,8 +10,13 @@ def make_mald_ipa(arpabet_phonemes):
             for char in phoneme:
                 ipa.append(arpabet_to_ipa[char])
     return ' '.join(ipa)
-    
-        
+
+def make_baldey_ipa(disc_phonemes):
+    ipa = []
+    for char in disc_phonemes:
+        ipa.append(disc_to_ipa[char])
+    return ' '.join(ipa)
+
 
 arpabet_to_ipa = {
     'AA': 'ɑ',
@@ -81,6 +86,7 @@ ipa_to_arpabet['ɛə'] = 'EH'
 ipa_to_arpabet['ʊə'] = 'UH'
 ipa_to_arpabet['æ̃'] = 'AE'
 ipa_to_arpabet['ɔ̃'] = 'AO'
+ipa_to_arpabet['m̩'] = 'M'
 
 
 arpabet_to_examples = {
@@ -160,6 +166,7 @@ sampa_to_ipa = {
 	"Z":'ʒ',
 	"h":'h',
 	"m":'m',
+	"m,":'m̩',
 	"n":'n',
     "n,":'n̩',
 	"N":'ŋ',
@@ -173,7 +180,9 @@ sampa_to_ipa = {
 	"W":'ʍ',
 	"x":'x',
 	"A":'ɑ',
-	"i":'i',
+	"A:":'ɑː',
+	"i:":'iː',
+	"i::":'iːː',
 	"I":'ɪ',
 	"E":'ɛ',
     "3":'ɜː',
@@ -182,6 +191,7 @@ sampa_to_ipa = {
 	"Ar\\":'ɑɹ',
 	"V":'ʌ',
 	"A":'ɑ',
+	"A:":'ɑː',
 	"O":'ɔ', 
 	"U":'ʊ',
 	"u":'u',
@@ -229,6 +239,7 @@ celex_to_sampa["k"] = "k"
 celex_to_sampa["g"] = "g"
 celex_to_sampa["N"] = "N"
 celex_to_sampa["m"] = "m"
+celex_to_sampa["m,"] = "m,"
 celex_to_sampa["n"] = "n"
 celex_to_sampa["n,"] = "n,"
 celex_to_sampa["l"] = "l"
@@ -308,9 +319,7 @@ disc_to_sampa["g"] = "g"
 disc_to_sampa["N"] = "N"
 disc_to_sampa["m"] = "m"
 disc_to_sampa["n"] = "n"
-disc_to_sampa["H"] = "n,"
 disc_to_sampa["l"] = "l"
-disc_to_sampa["P"] = "l,"
 disc_to_sampa["R"] = "r"
 disc_to_sampa["r"] = "r"
 disc_to_sampa["f"] = "f"
@@ -327,14 +336,14 @@ disc_to_sampa["h"] = "h"
 disc_to_sampa["w"] = "w"
 disc_to_sampa["J"] = "tS"
 disc_to_sampa["_"] = "dZ"
-disc_to_sampa["i"] = "i"
+disc_to_sampa["i"] = "i:"
 disc_to_sampa["I"] = "I"
 disc_to_sampa["E"] = "E"
 disc_to_sampa['c'] = '{'
 disc_to_sampa["{"] = "{"
 disc_to_sampa["V"] = "V"
 disc_to_sampa["$"] = "O"
-disc_to_sampa["#"] = "A"
+disc_to_sampa["#"] = "A:"
 disc_to_sampa["Q"] = "O"
 disc_to_sampa["$"] = "O"
 disc_to_sampa["u"] = "u"
@@ -355,6 +364,10 @@ disc_to_sampa["9"] = "U@"
 disc_to_sampa["@"] = "@"
 disc_to_sampa['q'] = 'A~:'
 disc_to_sampa['~'] = 'O~:'
+disc_to_sampa['F'] = 'm,'
+disc_to_sampa["H"] = "n,"
+disc_to_sampa["P"] = "l,"
+disc_to_sampa['!'] = 'i::'
 
 sampa_to_disc = {}
 for disc, sampa in disc_to_sampa.items():
