@@ -5,6 +5,7 @@ baldey_audio = baldey + 'recordings/'
 fn_baldey_audio = glob.glob(baldey_audio + '*/*.wav')
 baldey_textgrids = baldey + 'textgrids/'
 fn_baldey_textgrids = glob.glob(baldey_textgrids + '*.TextGrid')
+baldey_tables_directory = baldey + 'tables/'
 baldey_data_filename = baldey + 'baldey.txt'
 baldey_column_filename = baldey + 'baldey_columns.txt'
 baldey_wordset_filename = baldey + 'word_set.txt'
@@ -23,6 +24,6 @@ mald_prosodic_syllables_directory = mald + 'prosodic_syllables/'
 
 word_to_filenames_dict = '../word_to_filenames_dict.json'
 
-celex_english_phonology_directory = '../CELEX/EPL/'
-celex_english_phonology_file = celex_english_phonology_directory + 'EPL.CD'
-celex_english_phonology_header = celex_english_phonology_directory + 'EPL.CD'
+celex_directory = '../CELEX/'
+celex_english_phonology_file = celex_directory+ 'EPW.CD'
+celex_dutch_phonology_file = celex_directory + 'DPW.CD'
