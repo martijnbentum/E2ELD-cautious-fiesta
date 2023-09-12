@@ -1,5 +1,6 @@
 import celex
 import locations
+import make_syllabels_with_prosodic as mswp
 import metadata
 import os
 import phonemes
@@ -36,6 +37,12 @@ class Words:
             d['words'] = self
             self.words.append(Word(**d))
 
+    def get_word(self,word):
+        output = []
+        for w in self.words:
+            if w.word == word: output.append(w)
+        return output
+
 
 class Word:
     def __init__(self, word, audio_filename, textgrid_filename, 
@@ -63,6 +70,7 @@ class Word:
         if self.dataset == 'baldey': self._set_baldey()
         else: self._set_mald()
         self._set_table()
+        self._make_mald_syllables()
 
     def _set_mald(self):
         self.is_word = self.d['word_status']
@@ -80,6 +88,9 @@ class Word:
             except KeyError: self.celex_word = None
         else: self.celex_word = None
         self.n_phonemes = len(self.phoneme_transcription.split(' '))
+        if self.is_word:
+            self.prosodic = mswp.load_json(self.word)
+        else: self.prosodic = None
 
     def _set_baldey(self):
         if self.d['word_status'] == 'word': self.is_word = True
@@ -87,13 +98,24 @@ class Word:
         self.n_syllables = self.d['Nword_syllables']
         self.duration = self.d['word_duration']
         self.pos = self.d['word_class']
-        self.phonemes = self.d['transcription']
+        self.phoneme_transcription = self.d['transcription']
+        self.ipa = phonemes.make_baldey_ipa(self.phoneme_transcription)
         self.language = 'dutch'
-        self.table_filename = ''
+        self.table_filename = load_json.baldey_tables_directory
+        self.table_filename += self.audio_filename.split('/')[-1].split('.')[0]
+        self.table_filename += '.csv'
 
     def _set_table(self):
         if not os.path.isfile(self.table_filename): return
         self.table = Table(self.table_filename, self)
+
+    def _make_mald_syllables(self):
+        self.syllable_error = False
+        if hasattr(self,'celex_word') and self.celex_word:
+            try: make_mald_syllables_with_celex(self)
+            except AssertionError: self.syllable_error = True
+        else: self.syllable_error = True
+
             
 class Table:
     def __init__(self, filename, word = None):
@@ -101,9 +123,17 @@ class Table:
         self.word = word
         self.table = open_table(filename)
         self._make_phonemes()
-        self.start = self.phonemes[0].start_time
-        self.end = self.phonemes[-1].end_time
-        self.duration = self.end - self.start
+        if self.phonemes:
+            self.start = self.phonemes[0].start_time
+            self.end = self.phonemes[-1].end_time
+            self.duration = self.end - self.start
+            self.ok = True
+        else:
+            self.start = None 
+            self.end = None
+            self.duration = None
+            self.ok = False 
+            
 
     def __repr__(self):
         m = 'table| ' + self.word.word + ' ' + str(round(self.duration,2))
@@ -113,15 +143,42 @@ class Table:
         self.phonemes = []
         for line in self.table:
             if line[1] != 'phone': continue
+            # if line[2] == 'sp': continue
             phoneme = Phoneme(line, self)
+            if phoneme.phoneme == 'sp': continue
             self.phonemes.append(phoneme)
+        self.n_phonemes = len(self.phonemes)
+        self.phonemes_str = ' '.join([p.phoneme for p in self.phonemes])
 
 class Syllable:
-    def __init__(self, phonemes, stress):
+    def __init__(self, phonemes, stress, index, word, source):
         self.phonemes = phonemes
         self.stress = stress
         self.start_time = self.phonemes[0].start_time
-        self.end_time = self.phonemes[-1].duration_time
+        self.end_time = self.phonemes[-1].end_time
+        self.duration = self.end_time - self.start_time
+        self.index = index
+        self.word = word
+        self.source = source
+        self.phonemes_str = ' '.join([p.phoneme for p in self.phonemes])
+
+    def __repr__(self):
+        m = 'Syllable| '
+        m += self.phonemes_str.ljust(9) + '| '  
+        m += self.ipa.ljust(9) + '| (' 
+        m += str(round(self.start_time,2)).ljust(5) + '- '
+        m += str(round(self.end_time,2)).ljust(4) + ') '
+        m += str(round(self.duration,2)).ljust(4)
+        m += ' | ' + self.stress.ljust(10)
+        m += '| ' + self.source
+        return m
+
+    @property
+    def ipa(self):
+        if hasattr(self,'_ipa'): return self._ipa
+        self._ipa = phonemes.make_mald_ipa(self.phonemes_str)
+        return self._ipa
+        
         
 
 class Phoneme:
@@ -132,6 +189,7 @@ class Phoneme:
         self.end_time = line[-1]
         self.duration = self.end_time - self.start_time
         self._set_phoneme()
+        self.syllable_index = None
     
     def __repr__(self):
         m = self.phoneme.ljust(4) + str(self.stress_number) + ' | '
@@ -145,6 +203,11 @@ class Phoneme:
         if self.stress_number != 0: self.stressed = True
         else: self.stressed = False
         
+
+    @property
+    def ipa(self):
+        if self.phoneme in phonemes.arpabet_to_ipa.keys():
+            return phonemes.arpabet_to_ipa[self.phoneme]
         
         
         
@@ -172,7 +235,29 @@ def select_words(words, n_syllables = None, language = None, is_word = None):
         output = [word for word in output if word.is_word == is_word]
     return output
         
-    pass
 
 
+def make_mald_syllables_with_celex(word):
+    assert word.table.n_phonemes == word.celex_word.n_phonemes
+    n_phonemes = word.celex_word.n_phonemes
+    word.syllables = []
+    phoneme_index = 0
+    for syllable_index, syllable in enumerate(word.celex_word.arpabet_syllables):
+        phonemes = []
+        for _ in range(len(syllable)):
+            phoneme = word.table.phonemes[phoneme_index]
+            phoneme.syllable_index = syllable_index
+            phonemes.append(phoneme)
+            phoneme_index += 1
+        stress = x=word.celex_word.stress_list[syllable_index]
+        syllable = Syllable(phonemes,stress, syllable_index, word, 'celex')
+        word.syllables.append(syllable)
+            
+    
+                
+
+    
+        
+
+    
 
