@@ -1,15 +1,20 @@
 import json
 import locations
+import os
 import prosodic
 import word as w
 
 
-def analyze(word, save = True):
+def analyze(word, save = True, strict = True):
     t = prosodic.Text(word)
     d = {}
     d['word'] = word
     d['syllables'] = [handle_syllable(s) for s in t.syllables()]
-    if save: save_json(d)
+    if save: 
+        if strict and not d['syllables']: 
+            print('not saving because no syllables found')
+            return d
+        else:save_json(d)
     return d
 
 def handle_syllable(syllable):
@@ -26,7 +31,7 @@ def save_json(d):
         json.dump(d,fout)
 
 def load_json(word):
-    filename = locations.mald_prosodic_syllables_directory + d['word'] + '.json'
+    filename = locations.mald_prosodic_syllables_directory + word + '.json'
     with open(filename) as fin:
         d = json.load(fin)
     return d
