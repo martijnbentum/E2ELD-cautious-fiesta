@@ -126,12 +126,12 @@ class Mapper:
         self.baldey_to_ipa['u'] = 'uː'
         self.baldey_to_ipa['Ei'] = 'ɛi' # mistake in baldey textgrid output?
         self.baldey_to_ipa['E+'] = 'ɛi'
-        self.baldey_to_ipa['A+'] = 'ɑ'
+        self.baldey_to_ipa['A+'] = 'ɑu'
         self.baldey_to_ipa['a'] = 'aː'
         self.baldey_to_ipa['e'] = 'eː'
         self.baldey_to_ipa['Y'] = 'ʉ'
         self.baldey_to_ipa['o'] = 'oː'
-        self.baldey_to_ipa['2'] = 'øː'
+        self.baldey_to_ipa['T'] = 'øː'
         self.ipa_to_baldey= {}
         self.disc_to_baldey= {}
         self.baldey_to_disc = {}
