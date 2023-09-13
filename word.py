@@ -3,7 +3,8 @@ import locations
 import make_syllabels_with_prosodic as mswp
 import metadata
 import os
-import phonemes
+# import phonemes
+import phoneme_mapper as pm
 from progressbar import progressbar
 import time
 import utils
@@ -17,25 +18,37 @@ class Words:
         self.baldey_header = metadata.baldey_header()
         self.mald_header = metadata.mald_word_header()
         self.word_to_filenames = metadata.word_to_filenames_dict()
-        self.celex = celex.Celex()
+        self.english_celex = celex.Celex('english')
+        self.dutch_celex = celex.Celex('dutch')
+        self.english_phoneme_mapper = pm.Mapper('english')
+        self.dutch_phoneme_mapper = pm.Mapper('dutch')
         self._make_words()
+
 
     def _make_words(self):
         self.words = []
-        for line in self.baldey_data:
-            word = line[9]
-            d = self.word_to_filenames['baldey'][word]
-            d['header'] = self.baldey_header
-            d['metadata'] = line
-            d['words'] = self
-            self.words.append(Word(**d))
-        for line in self.mald_data:
-            word = line[0]
-            d = self.word_to_filenames['mald'][word]
-            d['header'] = self.mald_header
-            d['metadata'] = line
-            d['words'] = self
-            self.words.append(Word(**d))
+        self.dataset_names = 'baldey,mald'.split(',')
+        for name in self.dataset_names:
+            if name == 'baldey': 
+                word_index = 9
+                language = 'dutch'
+            elif name == 'mald': 
+                word_index = 0
+                language = 'english'
+            self._handle_data(name,word_index,language)
+
+    def _handle_data(self,name,word_index,language):
+            data = getattr(self,name + '_data')
+            print('handling',name)
+            for line in progressbar(data):
+                word = line[word_index]
+                d = self.word_to_filenames[name][word]
+                d['header'] = getattr(self,name + '_header')
+                d['metadata'] = line
+                d['words'] = self
+                d['language'] = language
+                d['dataset'] = name
+                self.words.append(Word(**d))
 
     def get_word(self,word):
         output = []
@@ -46,15 +59,15 @@ class Words:
 
 class Word:
     def __init__(self, word, audio_filename, textgrid_filename, 
-        metadata, header, words):
+        metadata, header, words, language, dataset):
         self.word = word
         self.audio_filename = audio_filename
         self.textgrid_filename = textgrid_filename
         self.metadata = metadata
         self.header = header
         self.words = words
-        if len(self.header) == 50: self.dataset = 'baldey'
-        else: self.dataset = 'mald'
+        self.language = language
+        self.dataset = dataset
         self._set_info()
 
     def __repr__(self):
@@ -70,7 +83,8 @@ class Word:
         if self.dataset == 'baldey': self._set_baldey()
         else: self._set_mald()
         self._set_table()
-        self._make_mald_syllables()
+        if self.dataset == 'mald':self._make_mald_syllables()
+        if self.dataset == 'baldey': self._make_baldey_syllables()
 
     def _set_mald(self):
         self.is_word = self.d['word_status']
@@ -79,14 +93,16 @@ class Word:
         self.pos = self.d['pos']
         self.phoneme_transcription = self.d['phoneme_transcription']
         self.language = 'english'
-        self.ipa = phonemes.make_mald_ipa(self.phoneme_transcription)
+        self.ipa = pm.make_mald_ipa(self.phoneme_transcription)
         self.table_filename = locations.mald_table_directory
-        self.table_filename += self.audio_filename.split('/')[-1].split('.')[0]
+        self.table_filename+= self.audio_filename.split('/')[-1].split('.')[0]
         self.table_filename += '.csv'
         if self.is_word:
-            try: self.celex_word = self.words.celex.get_word(self.word)
+            self.celex = self.words.english_celex
+            try: self.celex_word = self.celex.get_word(self.word)
             except KeyError: self.celex_word = None
         else: self.celex_word = None
+        self.phoneme_mapper = self.words.english_phoneme_mapper
         self.n_phonemes = len(self.phoneme_transcription.split(' '))
         if self.is_word:
             self.prosodic = mswp.load_json(self.word)
@@ -99,11 +115,17 @@ class Word:
         self.duration = self.d['word_duration']
         self.pos = self.d['word_class']
         self.phoneme_transcription = self.d['transcription']
-        self.ipa = phonemes.make_baldey_ipa(self.phoneme_transcription)
+        self.ipa = pm.make_baldey_ipa(self.phoneme_transcription)
         self.language = 'dutch'
-        self.table_filename = load_json.baldey_tables_directory
-        self.table_filename += self.audio_filename.split('/')[-1].split('.')[0]
+        self.table_filename = locations.baldey_tables_directory
+        self.table_filename+= self.audio_filename.split('/')[-1].split('.')[0]
         self.table_filename += '.csv'
+        if self.is_word:
+            self.celex = self.words.dutch_celex
+            try: self.celex_word = self.celex.get_word(self.word)
+            except KeyError: self.celex_word = None
+        else: self.celex_word = None
+        self.phoneme_mapper = self.words.dutch_phoneme_mapper
 
     def _set_table(self):
         if not os.path.isfile(self.table_filename): return
@@ -113,6 +135,13 @@ class Word:
         self.syllable_error = False
         if hasattr(self,'celex_word') and self.celex_word:
             try: make_mald_syllables_with_celex(self)
+            except AssertionError: self.syllable_error = True
+        else: self.syllable_error = True
+
+    def _make_baldey_syllables(self):
+        self.syllable_error = False
+        if hasattr(self,'celex_word') and self.celex_word:
+            try: make_baldey_syllables_with_celex(self)
             except AssertionError: self.syllable_error = True
         else: self.syllable_error = True
 
@@ -142,7 +171,7 @@ class Table:
     def _make_phonemes(self):
         self.phonemes = []
         for line in self.table:
-            if line[1] != 'phone': continue
+            if line[1] not in  ['phone','segmentation']: continue
             # if line[2] == 'sp': continue
             phoneme = Phoneme(line, self)
             if phoneme.phoneme == 'sp': continue
@@ -176,7 +205,7 @@ class Syllable:
     @property
     def ipa(self):
         if hasattr(self,'_ipa'): return self._ipa
-        self._ipa = phonemes.make_mald_ipa(self.phonemes_str)
+        self._ipa = pm.make_mald_ipa(self.phonemes_str)
         return self._ipa
         
         
@@ -206,8 +235,9 @@ class Phoneme:
 
     @property
     def ipa(self):
+        mapper = self.table.word.phoneme_mapper
         if self.phoneme in phonemes.arpabet_to_ipa.keys():
-            return phonemes.arpabet_to_ipa[self.phoneme]
+            return mapper.arpabet_to_ipa[self.phoneme]
         
         
         
@@ -242,7 +272,8 @@ def make_mald_syllables_with_celex(word):
     n_phonemes = word.celex_word.n_phonemes
     word.syllables = []
     phoneme_index = 0
-    for syllable_index, syllable in enumerate(word.celex_word.arpabet_syllables):
+    arpabet_syllables = word.celex_word.arpabet_syllables
+    for syllable_index,syllable in enumerate(arpabet_syllables):
         phonemes = []
         for _ in range(len(syllable)):
             phoneme = word.table.phonemes[phoneme_index]
@@ -253,6 +284,22 @@ def make_mald_syllables_with_celex(word):
         syllable = Syllable(phonemes,stress, syllable_index, word, 'celex')
         word.syllables.append(syllable)
             
+def make_baldey_syllables_with_celex(word):
+    assert word.table.n_phonemes == word.celex_word.n_phonemes
+    n_phonemes = word.celex_word.n_phonemes
+    word.syllables = []
+    phoneme_index = 0
+    ipa_syllables = word.celex_word.ipa_syllables
+    for syllable_index,syllable in enumerate(ipa_syllables):
+        phonemes = []
+        for _ in range(len(syllable)):
+            phoneme = word.table.phonemes[phoneme_index]
+            phoneme.syllable_index = syllable_index
+            phonemes.append(phoneme)
+            phoneme_index += 1
+        stress = x=word.celex_word.stress_list[syllable_index]
+        syllable = Syllable(phonemes,stress, syllable_index, word, 'celex')
+        word.syllables.append(syllable)
     
                 
 
