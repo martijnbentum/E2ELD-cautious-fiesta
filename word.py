@@ -177,7 +177,8 @@ class Table:
             if phoneme.phoneme == 'sp': continue
             self.phonemes.append(phoneme)
         self.n_phonemes = len(self.phonemes)
-        self.phonemes_str = ' '.join([p.phoneme for p in self.phonemes])
+        self.phonemes_list = [p.phoneme for p in self.phonemes]
+        self.phonemes_str = ' '.join(self.phonemes_list)
 
 class Syllable:
     def __init__(self, phonemes, stress, index, word, source):
@@ -205,7 +206,10 @@ class Syllable:
     @property
     def ipa(self):
         if hasattr(self,'_ipa'): return self._ipa
-        self._ipa = pm.make_mald_ipa(self.phonemes_str)
+        if self.word.dataset == 'mald':
+            self._ipa = pm.make_mald_ipa(self.phonemes_str)
+        elif self.word.dataset == 'baldey':
+            self._ipa = pm.make_baldey_ipa(self.phonemes_str)
         return self._ipa
         
         
