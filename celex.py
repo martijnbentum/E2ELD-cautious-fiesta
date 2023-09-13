@@ -1,10 +1,12 @@
 import locations
-import phonemes
+# import phonemes
+import phoneme_mapper
 
 class Celex:
     def __init__(self, language = 'english'):
         self.language = language
         self._set_data()
+        self.phoneme_mapper = phoneme_mapper.Mapper(language)
 
     def _set_data(self):
         if self.language == 'english':
@@ -28,15 +30,16 @@ class Celex:
         return self.word_dict[word]
 
 class Word:
-    def __init__(self, line, celex):
+    def __init__(self, line, parent):
         self.line = line
-        self.celex = celex
+        self.parent = parent
+        self.language = self.parent.language
         self.ok = True
         self._set_info()
             
 
     def _set_info(self):
-        for column_name, column in zip(self.celex.header, self.line):
+        for column_name, column in zip(self.parent.header, self.line):
             setattr(self,column_name, column)
         '''
         self.number = self.line[0]
@@ -53,7 +56,7 @@ class Word:
 
     def __repr__(self):
         m = self.id_number + ' ' + self.word + ' ' + self.disc
-        m += ' ' + self.cv+ ' ' + self.celex + ' ' + self.stress_pattern
+        m += ' ' + self.cv+ ' ' + self.ipa + ' ' + self.stress_pattern
         return m
 
     def _extract_stress_pattern(self):
@@ -83,56 +86,71 @@ class Word:
             if char not in ["'",'"','-']: self.n_phonemes += 1
 
     @property
+    def cgn_syllables(self):
+        if not self.ok: return
+        if self.language != 'dutch': return 
+        if hasattr(self,'_cgn_syllables'): return self._cgn_syllables
+        return self._make_syllable('cgn')
+
+    @property
     def arpabet_syllables(self):
         if not self.ok: return
+        if self.language != 'english': return 
         if hasattr(self,'_arpabet_syllables'): return self._arpabet_syllables
-        self.arpabet
-        self._arpabet_syllables = []
-        syllable = []
-        for phoneme in self._arpabet:
-            if phoneme == '-': 
-                if syllable: self._arpabet_syllables.append(syllable)
-                syllable = []
-            else: syllable.append(phoneme)
-        if syllable: self._arpabet_syllables.append(syllable)
-        return self._arpabet_syllables
+        return self._make_syllable('arpabet')
 
     @property
     def ipa_syllables(self):
         if not self.ok: return
         if hasattr(self,'_ipa_syllables'): return self._ipa_syllables
-        self.ipa
-        self._ipa_syllables = []
+        return self._make_syllable('ipa')
+
+    def _make_syllable(self, phoneme_set):
+        attr_name = '_' + phoneme_set + '_syllables' 
+        if hasattr(self,attr_name): return getattr(self,attr_name)
+        getattr(self,phoneme_set)
+        transcription = getattr(self,'_' + phoneme_set)
+        setattr(self,attr_name,[]) 
         syllable = []
-        for phoneme in self._ipa:
+        for phoneme in transcription:
             if phoneme == '-': 
-                if syllable: self._ipa_syllables.append(syllable)
+                if syllable: getattr(self,attr_name).append(syllable)
                 syllable = []
             else: syllable.append(phoneme)
-        if syllable: self._ipa_syllables.append(syllable)
-        return self._ipa_syllables
+        if syllable: getattr(self,attr_name).append(syllable)
+        return getattr(self,attr_name)
 
     @property
     def ipa(self):
         if not self.ok: return
         if not hasattr(self,'_ipa'): 
-            self._ipa = []
-            for char in self.disc:
-                if char in ['"',"'"]: continue
-                if char == '-': self._ipa.append( char )
-                else: self._ipa.append( phonemes.disc_to_ipa[char] )
+            disc_to_ipa = self.parent.phoneme_mapper.disc_to_ipa
+            self._make_phoneme_transcription('ipa',disc_to_ipa)
         return ' '.join([p for p in self._ipa if p != '-'])
 
     @property
     def arpabet(self):
         if not self.ok: return
         if not hasattr(self,'_arpabet'):
-            self._arpabet= []
-            for char in self.disc:
-                if char in ['"',"'"]: continue
-                if char == '-': self._arpabet.append( char )
-                else: self._arpabet.append( phonemes.disc_to_arpabet[char] )
+            disc_to_arpabet= self.parent.phoneme_mapper.disc_to_arpabet
+            self._make_phoneme_transcription('arpabet',disc_to_arpabet)
         return ' '.join([p for p in self._arpabet if p != '-'])
+
+    @property
+    def cgn(self):
+        if not self.ok: return
+        if not hasattr(self,'_cgn'):
+            disc_to_cgn= self.parent.phoneme_mapper.disc_to_cgn
+            self._make_phoneme_transcription('cgn',disc_to_cgn)
+        return ' '.join([p for p in self._cgn if p != '-'])
+
+    def _make_phoneme_transcription(self,name, mapper):
+        name = '_' + name
+        setattr(self,name, [])
+        for char in self.disc:
+            if char in ['"',"'",'~',' ']: continue
+            if char == '-': getattr(self,name).append( char )
+            else: getattr(self,name).append( mapper[char] )
 
 
 def open_cd(filename):
