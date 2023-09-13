@@ -1,3 +1,26 @@
+import utils
+
+def make_mald_ipa(arpabet_phonemes):
+    mapper = Mapper('english')
+    arpabet_to_ipa = mapper.arpabet_to_ipa
+    ipa = []
+    for phoneme in arpabet_phonemes.split(' '):
+        phoneme = utils.remove_numeric(phoneme)
+        if phoneme in arpabet_to_ipa.keys():
+            ipa.append(arpabet_to_ipa[phoneme])
+        else:
+            for char in phoneme:
+                ipa.append(arpabet_to_ipa[char])
+    return ' '.join(ipa)
+
+def make_baldey_ipa(disc_phonemes):
+    mapper = Mapper('dutch')
+    disc_to_ipa = mapper.disc_to_ipa
+    ipa = []
+    for char in disc_phonemes:
+        ipa.append(disc_to_ipa[char])
+    return ' '.join(ipa)
+
 class Mapper:
     '''map phonemes from one set to another set.'''
     def __init__(self, language = 'english'):
@@ -6,16 +29,18 @@ class Mapper:
         self.sampa_set = sampa_set
         self.celex_set = celex_set
         self.disc_set = disc_set
+        self.cgn_set = cgn_set
         self.examples_dutch = examples_dutch
         self.examples_english= examples_english
         self.examples_german= examples_german
-        names = 'ipa_set,sampa_set,celex_set,disc_set'
+        names = 'ipa_set,sampa_set,celex_set,disc_set,cgn_set'
         names += ',examples_dutch,examples_english,examples_german'
         self.names = names.split(',')
         self._make_dicts()
         self._add_arpabet()
         if self.language != 'dutch':
             self._fix_w()
+        self._add_baldey()
 
     def _make_dicts(self):
         '''create dicts to map ipa, sampa, celex and disc phonemes
@@ -23,6 +48,7 @@ class Mapper:
         self.ipa_to_sampa = {}
         self.ipa_to_celex = {}
         self.ipa_to_disc = {}
+        self.ipa_to_cgn= {}
         self.sampa_to_ipa = {}
         self.sampa_to_celex = {}
         self.sampa_to_disc= {}
@@ -32,13 +58,17 @@ class Mapper:
         self.disc_to_ipa = {}
         self.disc_to_sampa = {}
         self.disc_to_celex = {}
+        self.disc_to_cgn = {}
+        self.cgn_to_disc = {}
+        self.cgn_to_ipa = {}
         
         sets = [self.ipa_set,self.sampa_set]
-        sets += [self.celex_set,self.disc_set]
-        for ipa, sampa, celex, disc in zip(*sets):
+        sets += [self.celex_set,self.disc_set, self.cgn_set]
+        for ipa, sampa, celex, disc, cgn in zip(*sets):
             self.ipa_to_sampa[ipa] = sampa
             self.ipa_to_disc[ipa] = disc
             self.ipa_to_celex[ipa] = celex
+            self.ipa_to_cgn[ipa] = cgn
             self.sampa_to_ipa[sampa] = ipa
             self.sampa_to_disc[sampa] = disc
             self.sampa_to_celex[sampa] = celex
@@ -48,6 +78,10 @@ class Mapper:
             self.disc_to_ipa[disc] = ipa
             self.disc_to_sampa[disc] = sampa
             self.disc_to_celex[disc] = celex
+            self.disc_to_cgn[disc] = cgn
+            self.cgn_to_ipa[cgn] = ipa
+            self.cgn_to_disc[cgn] = disc
+
 
     def _add_arpabet(self):
         self.ipa_to_arpabet = ipa_to_arpabet
@@ -61,6 +95,10 @@ class Mapper:
             if ipa == 'uː': ipa = 'u'
             if ipa == 'ɑɪ': ipa = 'ai'
             if ipa == 'ɑ̃ː': ipa = 'ɑː'
+            if ipa == 'ɒ' : ipa = 'ɔ'
+            if ipa == 'ɔ̃' : ipa = 'ɔ'
+            if ipa == 'æ̃ː': ipa = 'æ̃'
+            if ipa == 'ŋ̩': ipa = 'ŋ'
             if ipa not in self.ipa_to_arpabet.keys():
                 continue
             arpabet= self.ipa_to_arpabet[ipa]
@@ -72,13 +110,43 @@ class Mapper:
         self.sampa_to_ipa['w'] ='w'
         self.disc_to_ipa['w'] ='w'
 
+    def _add_baldey(self):
+        '''this a restricted phoneme set used in baldey textgrids
+        probably based on cgn
+        '''
+        self.baldey_to_ipa = {}
+        self.baldey_textgrid_phoneme_set = baldey_textgrid_phoneme_set
+        ps = self.baldey_textgrid_phoneme_set
+        for sampa, ipa in self.sampa_to_ipa.items():
+            if sampa in ps: self.baldey_to_ipa[sampa] = ipa
+        self.baldey_to_ipa['y'] = 'yː'
+        self.baldey_to_ipa['i'] = 'iː'
+        self.baldey_to_ipa['Y+'] = 'œy'
+        self.baldey_to_ipa['Y+'] = 'œy'
+        self.baldey_to_ipa['u'] = 'uː'
+        self.baldey_to_ipa['Ei'] = 'ɛi' # mistake in baldey textgrid output?
+        self.baldey_to_ipa['E+'] = 'ɛi'
+        self.baldey_to_ipa['A+'] = 'ɑ'
+        self.baldey_to_ipa['a'] = 'aː'
+        self.baldey_to_ipa['e'] = 'eː'
+        self.baldey_to_ipa['Y'] = 'ʉ'
+        self.baldey_to_ipa['o'] = 'oː'
+        self.baldey_to_ipa['2'] = 'øː'
+        self.ipa_to_baldey= {}
+        self.disc_to_baldey= {}
+        self.baldey_to_disc = {}
+        for baldey, ipa in self.baldey_to_ipa.items():
+            disc = self.ipa_to_disc[ipa]
+            self.baldey_to_ipa[baldey] = ipa
+            self.disc_to_baldey[disc] = baldey
+            self.baldey_to_disc[baldey] = disc
             
 
-def validate(ipa = None):
-    if not ipa: ipa = Ipa()
+def validate(mapper= None):
+    if not mapper: mapper= Mapper()
     n_items = {}
-    for name in ipa.names:
-        attr = getattr(ipa,name)
+    for name in mapper.names:
+        attr = getattr(mapper,name)
         n_items[name] = len(attr)
     return n_items
     
@@ -89,9 +157,9 @@ def set_none(examples):
             examples[index] = None
     return examples
 
-def show(ipa = None):
-    if not ipa: ipa = Ipa()
-    attrs = [getattr(ipa,name) for name in ipa.names]
+def show(mapper= None):
+    if not mapper: mapper= Mapper()
+    attrs = [getattr(mapper,name) for name in mapper.names]
     for line in zip(*attrs):
         sl = list(map(str,line))
         sl[:4] = [x.ljust(4) for x in sl[:4]]
@@ -122,8 +190,16 @@ celex_set = celex_set.split('.')
 disc_set = 'p,b,t,d,k,g,N,m,n,l,r,f,v,T,D,s,z,S,Z,j,x,G,h,w,w'
 disc_set += ',+,=,J,_,C,F,H,P,R,i,!,#,a,$,u,3,y,(,),*,<,e,|,o,1,2,4'
 disc_set += ',5,6,7,8,9,K,L,M,W,B,X,I,Y,E,/,{,&,A,Q,V,O,U,},@,^'
-disc_set += ',c,q,O,"'
+disc_set += ',c,q,0,"'
 disc_set = disc_set.split(',')
+
+cgn_set = 'p,b,t,d,k,g,N,m,n,l,r,f,v,None,None,s,z,S,Z,j,x,G,h'
+cgn_set += ',None,w,None,None,None,None,None,None,None,None,None'
+cgn_set += ',i,None,None,a,None,u,None,y,None,E:,Y:,O:,e,2,o'
+cgn_set += ',None,None,None,None,None,None,None,None'
+cgn_set += ',E+,Y+,A+,None,None,None,I,None,E,None,None,None,A'
+cgn_set += ',None,None,O,None,Y,@,Y~,A~,E~,O~'
+cgn_set = set_none(cgn_set.split(','))
 
 examples_dutch = 'put,bad,tak,dak,kat,goal,lang,mat,nat,lat'
 examples_dutch += ',rat/later,fiets,vat,None,None,sap,zat,sjaal'
@@ -302,4 +378,15 @@ arpabet_to_examples = {
     'Z': '(z)oo',
     'ZH': 'plea(s)ure'
 }
+
+
+baldey_textgrid_phoneme_set = 'n,Y,m,@,r,s,b,E,k,f,A,t,y,p,i,x,O'
+baldey_textgrid_phoneme_set +=',Y+,j,v,u,l,I,z,E+,G,w,d,h,o,e,g,a,N'
+baldey_textgrid_phoneme_set +=',Au,Ei,S,T,A+,Z'
+baldey_textgrid_phoneme_set = baldey_textgrid_phoneme_set.split(',')
+
+celex_dutch_phoneme_set = 'a,x,j,@,t,A,p,l,s,d,n,I,N,k,b,E,Z,K,m,e,v,r,L'
+celex_dutch_phoneme_set += ',G,f,O,w,u,z,i,},h,o,y,M,|,S,g,*,),!,<,_,('
+celex_dutch_phoneme_set = celex_dutch_phoneme_set.split(',')
+
     
