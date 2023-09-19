@@ -5,7 +5,7 @@
 ### general
 ||types|tokes|
 |-|----|-----|
-|words|2780||
+|words|2780|2780|
 |syllables|2136|6718|
 
 2780 out 6718 syllables are stressed  
