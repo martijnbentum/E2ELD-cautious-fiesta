@@ -29,8 +29,8 @@
 |unstressed|236|200|123|30|722|
 
 ### top 20 syllable types with highest token counts
-|syllable|count|stressed|unstressed|
-|--------|-----|--------|----------|
+|syllable|count|stressed|unstressed|word|word ipa|
+|--------|-----|--------|----------|----|--------|
 |t ə|228|0|228|bemorste|b ə m ɔ r s t ə|
 |v ə r|218|0|218|vervolgen|v ə r v ɔ l ɣ ə|
 |d ə|201|0|201|kerstavonden|k ɛ r s t aː v ɔ n d ə|
