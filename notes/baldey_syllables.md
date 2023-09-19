@@ -55,7 +55,7 @@
 ### syllable with variable stress descriptive_statistics.stress_variability()
 18 syllable types with atleast 10 tokens with percentage stressed between .3 & .7
 
-```
+```python
 {'k oː': {'stressed': 13,
   'unstressed': 13,
   'syllables': [Syl| k oː     | 0.29 | primary   | i: 2 | overkomen | celex,
