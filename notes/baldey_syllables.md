@@ -8,8 +8,8 @@
 |words|2780||
 |syllables|2136|6718|
 
-2780 out 6718 syllables are stressed, 
-328 of the stressed syllables are from 1 syllable words (there are 328 1 syllable words)
+2780 out 6718 syllables are stressed  
+328 of the stressed syllables are from 1 syllable words (there are 328 1 syllable words)  
 1303 syllables types occur only once in the baldey dataset (1036 stressed)
 
 ### word counts with n syllables
@@ -22,7 +22,6 @@
 5|6|
 
 ### syllable duration
-mean 274 ms (std 137)
 ||mean|median|std|min|max|
 |-|---|------|---|---|---|
 |all|274|240|137|30|860|
@@ -56,6 +55,7 @@ mean 274 ms (std 137)
 ### syllable with variable stress descriptive_statistics.stress_variability()
 18 syllable types with atleast 10 tokens with percentage stressed between .3 & .7
 
+'''
 {'k oː': {'stressed': 13,
   'unstressed': 13,
   'syllables': [Syl| k oː     | 0.29 | primary   | i: 2 | overkomen | celex,
@@ -381,6 +381,6 @@ mean 274 ms (std 137)
    Syl| v iː     | 0.18 | primary   | i: 0 | video | celex,
    Syl| v iː     | 0.17 | no stress | i: 1 | proviand | celex],
   'perc_stressed': 0.4}}
-
+'''
 
 
