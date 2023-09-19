@@ -93,7 +93,7 @@ class Word:
         self.pos = self.d['pos']
         self.phoneme_transcription = self.d['phoneme_transcription']
         self.language = 'english'
-        self.ipa = pm.make_mald_ipa(self.phoneme_transcription)
+        self.phoneme_mapper = self.words.english_phoneme_mapper
         self.table_filename = locations.mald_table_directory
         self.table_filename+= self.audio_filename.split('/')[-1].split('.')[0]
         self.table_filename += '.csv'
@@ -102,7 +102,6 @@ class Word:
             try: self.celex_word = self.celex.get_word(self.word)
             except KeyError: self.celex_word = None
         else: self.celex_word = None
-        self.phoneme_mapper = self.words.english_phoneme_mapper
         self.n_phonemes = len(self.phoneme_transcription.split(' '))
         if self.is_word:
             self.prosodic = mswp.load_json(self.word)
@@ -115,7 +114,7 @@ class Word:
         self.duration = self.d['word_duration']
         self.pos = self.d['word_class']
         self.phoneme_transcription = self.d['transcription']
-        self.ipa = pm.make_baldey_ipa(self.phoneme_transcription)
+        self.phoneme_mapper = self.words.dutch_phoneme_mapper
         self.language = 'dutch'
         self.table_filename = locations.baldey_tables_directory
         self.table_filename+= self.audio_filename.split('/')[-1].split('.')[0]
@@ -125,7 +124,6 @@ class Word:
             try: self.celex_word = self.celex.get_word(self.word)
             except KeyError: self.celex_word = None
         else: self.celex_word = None
-        self.phoneme_mapper = self.words.dutch_phoneme_mapper
 
     def _set_table(self):
         if not os.path.isfile(self.table_filename): return
@@ -137,6 +135,8 @@ class Word:
             try: make_mald_syllables_with_celex(self)
             except AssertionError: self.syllable_error = True
         else: self.syllable_error = True
+        if self.syllable_error:
+            make_mald_syllables_with_prosodic(self)
 
     def _make_baldey_syllables(self):
         self.syllable_error = False
@@ -144,6 +144,24 @@ class Word:
             try: make_baldey_syllables_with_celex(self)
             except AssertionError: self.syllable_error = True
         else: self.syllable_error = True
+
+    @property
+    def ipa(self):
+        if hasattr(self,'_ipa'): return ' '.join(self._ipa)
+        if self.dataset == 'baldey':
+            to_ipa = self.phoneme_mapper.disc_to_ipa
+            phonemes = self.phoneme_transcription
+        if self.dataset == 'mald':
+            to_ipa = self.phoneme_mapper.arpabet_to_ipa
+            p = self.phoneme_transcription.split(' ')
+            phonemes = [utils.remove_numeric(x) for x in p]
+        self._ipa = []
+        for phoneme in phonemes:
+            self._ipa.append( to_ipa[phoneme] )
+        return ' '.join(self._ipa)
+                
+            
+            
 
             
 class Table:
@@ -184,15 +202,35 @@ class Syllable:
     def __init__(self, phonemes, stress, index, word, source):
         self.phonemes = phonemes
         self.stress = stress
+        self.stressed = self.stress == 'primary'
         self.start_time = self.phonemes[0].start_time
         self.end_time = self.phonemes[-1].end_time
         self.duration = self.end_time - self.start_time
         self.index = index
         self.word = word
+        self.dataset = word.dataset
         self.source = source
         self.phonemes_str = ' '.join([p.phoneme for p in self.phonemes])
 
+    def __hash__(self):
+        return hash(self.ipa)
+
+    def __eq__(self,other):
+        if not type(self) == type(other): return False
+        return self.ipa == other.ipa
+
+    
     def __repr__(self):
+        m = 'Syl| '
+        m += self.ipa.ljust(9) + '| ' 
+        m += str(round(self.duration,2)).ljust(5)
+        m += '| ' + self.stress.ljust(10)
+        m += '| i: ' + str(self.index)
+        m += ' | ' + self.word.word
+        m += ' | ' + self.source
+        return m
+
+    def __str__(self):
         m = 'Syllable| '
         m += self.phonemes_str.ljust(9) + '| '  
         m += self.ipa.ljust(9) + '| (' 
@@ -201,16 +239,25 @@ class Syllable:
         m += str(round(self.duration,2)).ljust(4)
         m += ' | ' + self.stress.ljust(10)
         m += '| ' + self.source
+        m += ' | ' + str(self.index)
+        m += ' | ' + self.word.word
         return m
 
     @property
     def ipa(self):
-        if hasattr(self,'_ipa'): return self._ipa
-        if self.word.dataset == 'mald':
-            self._ipa = pm.make_mald_ipa(self.phonemes_str)
-        elif self.word.dataset == 'baldey':
-            self._ipa = pm.make_baldey_ipa(self.phonemes_str)
-        return self._ipa
+        if hasattr(self,'_ipa'): return ' '.join(self._ipa)
+        if self.dataset == 'baldey':
+            to_ipa = self.word.phoneme_mapper.baldey_to_ipa
+            phonemes = self.phonemes_str.split(' ')
+        if self.dataset == 'mald':
+            to_ipa = self.word.phoneme_mapper.arpabet_to_ipa
+            p = self.phonemes_str.split(' ')
+            phonemes = [utils.remove_numeric(x) for x in p]
+        self._ipa = []
+        for phoneme in phonemes:
+            self._ipa.append( to_ipa[phoneme] )
+        return ' '.join(self._ipa)
+
         
         
 
@@ -231,7 +278,10 @@ class Phoneme:
         return m
 
     def _set_phoneme(self):
-        self.phoneme = utils.remove_numeric(self.line[2])
+        if self.table.word.dataset == 'mald':
+            self.phoneme = utils.remove_numeric(self.line[2])
+        else:
+            self.phoneme = self.line[2]
         self.stress_number = utils.get_number(self.line[2])
         if self.stress_number != 0: self.stressed = True
         else: self.stressed = False
@@ -305,10 +355,5 @@ def make_baldey_syllables_with_celex(word):
         syllable = Syllable(phonemes,stress, syllable_index, word, 'celex')
         word.syllables.append(syllable)
     
-                
-
-    
-        
-
-    
-
+def make_mald_syllables_with_prosodic(word):
+    return None
