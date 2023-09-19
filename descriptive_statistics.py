@@ -70,6 +70,10 @@ def top_n_syllable_type_count(d, n = 20):
     for k in keys[:n]:
         stressed = str(len([x for x in d[k] if x.stressed]))
         unstressed = str(len([x for x in d[k] if not x.stressed]))
-        print('|'+k+'|'+ str(len(d[k]))+'|'+stressed+'|'+unstressed+'|')
+        word = d[k][0].word.word
+        ipa = d[k][0].word.ipa
+        m ='|'+k+'|'+ str(len(d[k]))+'|'+stressed+'|'+unstressed+'|'
+        m += word+'|'+ipa+'|'
+        print(m)
    
     

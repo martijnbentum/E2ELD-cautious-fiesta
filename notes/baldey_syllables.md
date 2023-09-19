@@ -31,26 +31,26 @@
 ### top 20 syllable types with highest token counts
 |syllable|count|stressed|unstressed|
 |--------|-----|--------|----------|
-|t ə|228|0|228|
-|v ə r|218|0|218|
-|d ə|201|0|201|
-|b ə|187|1|186|
-|ɣ ə|102|0|102|
-|x ə|97|0|97|
-|k ə|96|0|96|
-|r ə|95|0|95|
-|h ɛi t|80|0|80|
-|l ə|71|0|71|
-|ɔ n t|71|0|71|
-|t ə x|62|0|62|
-|t ə r|61|0|61|
-|s ə|57|0|57|
-|n ə|57|0|57|
-|r ə x|56|0|56|
-|p ə|55|0|55|
-|oː|52|14|38|
-|v ə|52|0|52|
-|m ə|50|0|50|
+|t ə|228|0|228|bemorste|b ə m ɔ r s t ə|
+|v ə r|218|0|218|vervolgen|v ə r v ɔ l ɣ ə|
+|d ə|201|0|201|kerstavonden|k ɛ r s t aː v ɔ n d ə|
+|b ə|187|1|186|bemorste|b ə m ɔ r s t ə|
+|ɣ ə|102|0|102|vervolgen|v ə r v ɔ l ɣ ə|
+|x ə|97|0|97|gebleekt|x ə b l eː k t|
+|k ə|96|0|96|vertekenen|v ə r t eː k ə n ə|
+|r ə|95|0|95|vrijere|v r ɛi j ə r ə|
+|h ɛi t|80|0|80|dufheid|d ʉ f h ɛi t|
+|l ə|71|0|71|rotanstoelen|r oː t ɑ n s t uː l ə|
+|ɔ n t|71|0|71|ontslapen|ɔ n t s l aː p ə|
+|t ə x|62|0|62|schattig|s x ɑ t ə x|
+|t ə r|61|0|61|kwetter|k ʋ ɛ t ə r|
+|s ə|57|0|57|klassen|k l ɑ s ə|
+|n ə|57|0|57|vertekenen|v ə r t eː k ə n ə|
+|r ə x|56|0|56|pieperig|p iː p ə r ə x|
+|p ə|55|0|55|pieperig|p iː p ə r ə x|
+|oː|52|14|38|overschrijven|oː v ə r s x r ɛi v ə|
+|v ə|52|0|52|overschrijven|oː v ə r s x r ɛi v ə|
+|m ə|50|0|50|stomme|s t ɔ m ə|
 
 ### syllable with variable stress descriptive_statistics.stress_variability()
 18 syllable types with atleast 10 tokens with percentage stressed between .3 & .7
