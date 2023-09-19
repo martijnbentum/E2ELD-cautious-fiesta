@@ -31,7 +31,8 @@ def baldey_syllable_dict(syllables = None, w = None):
         d[syllable.ipa].append( syllable )
     return sort_dict_on_number_of_entries(d)
 
-def stress_variability(syllable_dict, minimal_count = 10, perc_delta = .2):
+def stress_variability(syllable_dict=None, minimal_count = 10, perc_delta = .2):
+    if not syllable_dict: syllable_dict = baldey_syllable_dict()
     d = {}
     variable = {}
     for ipa, syllables in syllable_dict.items():
@@ -54,4 +55,21 @@ def sort_dict_on_number_of_entries(d):
     d =dict(sorted(d.items(), key = lambda item:len(item[1]),reverse = True))
     return d
 
+        
+def hapax_baldey_syllables(d):
+    if not d: d = baldey_syllable_dict()
+    keys = [k for k,syllables in d.items() if len(syllables) ==1]
+    hapax= []
+    for k in keys: 
+        hapax.extend( d[k] )
+    return hapax
+
+def top_n_syllable_type_count(d, n = 20):
+    if not d: d = baldey_syllable_dict()
+    keys = list(d.keys())
+    for k in keys[:n]:
+        stressed = str(len([x for x in d[k] if x.stressed]))
+        unstressed = str(len([x for x in d[k] if not x.stressed]))
+        print('|'+k+'|'+ str(len(d[k]))+'|'+stressed+'|'+unstressed+'|')
+   
     
