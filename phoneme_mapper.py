@@ -1,26 +1,5 @@
 import utils
 
-def make_mald_ipa(arpabet_phonemes):
-    mapper = Mapper('english')
-    arpabet_to_ipa = mapper.arpabet_to_ipa
-    ipa = []
-    for phoneme in arpabet_phonemes.split(' '):
-        phoneme = utils.remove_numeric(phoneme)
-        if phoneme in arpabet_to_ipa.keys():
-            ipa.append(arpabet_to_ipa[phoneme])
-        else:
-            for char in phoneme:
-                ipa.append(arpabet_to_ipa[char])
-    return ' '.join(ipa)
-
-def make_baldey_ipa(disc_phonemes):
-    mapper = Mapper('dutch')
-    disc_to_ipa = mapper.disc_to_ipa
-    ipa = []
-    for char in disc_phonemes:
-        ipa.append(disc_to_ipa[char])
-    return ' '.join(ipa)
-
 class Mapper:
     '''map phonemes from one set to another set.'''
     def __init__(self, language = 'english'):
@@ -122,7 +101,6 @@ class Mapper:
         self.baldey_to_ipa['y'] = 'yː'
         self.baldey_to_ipa['i'] = 'iː'
         self.baldey_to_ipa['Y+'] = 'œy'
-        self.baldey_to_ipa['Y+'] = 'œy'
         self.baldey_to_ipa['u'] = 'uː'
         self.baldey_to_ipa['Ei'] = 'ɛi' # mistake in baldey textgrid output?
         self.baldey_to_ipa['E+'] = 'ɛi'
@@ -131,7 +109,7 @@ class Mapper:
         self.baldey_to_ipa['e'] = 'eː'
         self.baldey_to_ipa['Y'] = 'ʉ'
         self.baldey_to_ipa['o'] = 'oː'
-        self.baldey_to_ipa['T'] = 'øː'
+        self.baldey_to_ipa['2'] = 'øː'
         self.ipa_to_baldey= {}
         self.disc_to_baldey= {}
         self.baldey_to_disc = {}
