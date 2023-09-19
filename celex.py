@@ -93,6 +93,13 @@ class Word:
         return self._make_syllable('cgn')
 
     @property
+    def baldey_syllables(self):
+        if not self.ok: return
+        if self.language != 'dutch': return 
+        if hasattr(self,'_baldey_syllables'): return self._baldey_syllables
+        return self._make_syllable('baldey')
+
+    @property
     def arpabet_syllables(self):
         if not self.ok: return
         if self.language != 'english': return 
@@ -143,6 +150,14 @@ class Word:
             disc_to_cgn= self.parent.phoneme_mapper.disc_to_cgn
             self._make_phoneme_transcription('cgn',disc_to_cgn)
         return ' '.join([p for p in self._cgn if p != '-'])
+
+    @property
+    def baldey(self):
+        if not self.ok: return
+        if not hasattr(self,'_baldey'):
+            disc_to_baldey= self.parent.phoneme_mapper.disc_to_baldey
+            self._make_phoneme_transcription('baldey',disc_to_baldey)
+        return ' '.join([p for p in self._baldey if p != '-'])
 
     def _make_phoneme_transcription(self,name, mapper):
         name = '_' + name
