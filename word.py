@@ -1,3 +1,4 @@
+import align_phonemes
 import celex
 import locations
 import make_syllabels_with_prosodic as mswp
@@ -131,18 +132,17 @@ class Word:
 
     def _make_mald_syllables(self):
         self.syllable_error = False
-        if hasattr(self,'celex_word') and self.celex_word:
-            try: make_mald_syllables_with_celex(self)
+        if not self.is_word: self.syllable_error = True
+        elif hasattr(self,'celex_word') and self.celex_word:
+            make_mald_syllables_with_celex(self)
+        else: 
+            try:make_mald_syllables_with_prosodic(self)
             except AssertionError: self.syllable_error = True
-        else: self.syllable_error = True
-        if self.syllable_error:
-            make_mald_syllables_with_prosodic(self)
 
     def _make_baldey_syllables(self):
         self.syllable_error = False
         if hasattr(self,'celex_word') and self.celex_word:
-            try: make_baldey_syllables_with_celex(self)
-            except AssertionError: self.syllable_error = True
+            make_baldey_syllables_with_celex(self)
         else: self.syllable_error = True
 
     @property
@@ -159,10 +159,6 @@ class Word:
         for phoneme in phonemes:
             self._ipa.append( to_ipa[phoneme] )
         return ' '.join(self._ipa)
-                
-            
-            
-
             
 class Table:
     def __init__(self, filename, word = None):
@@ -181,19 +177,20 @@ class Table:
             self.duration = None
             self.ok = False 
             
-
     def __repr__(self):
         m = 'table| ' + self.word.word + ' ' + str(round(self.duration,2))
         return m
 
     def _make_phonemes(self):
         self.phonemes = []
+        phoneme_index = 0
         for line in self.table:
             if line[1] not in  ['phone','segmentation']: continue
             # if line[2] == 'sp': continue
-            phoneme = Phoneme(line, self)
+            phoneme = Phoneme(line, self, phoneme_index)
             if phoneme.phoneme == 'sp': continue
             self.phonemes.append(phoneme)
+            phoneme_index += 1
         self.n_phonemes = len(self.phonemes)
         self.phonemes_list = [p.phoneme for p in self.phonemes]
         self.phonemes_str = ' '.join(self.phonemes_list)
@@ -258,13 +255,11 @@ class Syllable:
             self._ipa.append( to_ipa[phoneme] )
         return ' '.join(self._ipa)
 
-        
-        
-
 class Phoneme:
-    def __init__(self, line, table):
+    def __init__(self, line, table, phoneme_index):
         self.line = line
         self.table = table
+        self.phoneme_index = phoneme_index
         self.start_time = line[0]
         self.end_time = line[-1]
         self.duration = self.end_time - self.start_time
@@ -272,7 +267,9 @@ class Phoneme:
         self.syllable_index = None
     
     def __repr__(self):
-        m = self.phoneme.ljust(4) + str(self.stress_number) + ' | '
+        m = self.ipa.ljust(4) + '| '+ str(self.phoneme_index) + ' | '
+        m += str(self.syllable_index) + ' | '
+        m += str(self.stressed) + ' | '
         m += ' ' + str(round(self.start_time,2)).ljust(5) 
         m += '- ' + str(round(self.end_time,2))
         return m
@@ -283,16 +280,31 @@ class Phoneme:
         else:
             self.phoneme = self.line[2]
         self.stress_number = utils.get_number(self.line[2])
-        if self.stress_number != 0: self.stressed = True
+        if self.stress_number == 1: self.stressed = True
         else: self.stressed = False
         
 
     @property
     def ipa(self):
-        mapper = self.table.word.phoneme_mapper
-        if self.phoneme in phonemes.arpabet_to_ipa.keys():
-            return mapper.arpabet_to_ipa[self.phoneme]
+        if self.table.word.dataset == 'mald':
+            d = self.table.word.phoneme_mapper.arpabet_to_ipa
+        else:
+            d = self.table.word.phoneme_mapper.baldey_to_ipa
+        if self.phoneme in d.keys():
+            return d[self.phoneme]
         
+    @property
+    def disc(self):
+        if self.table.word.dataset == 'mald':
+            d = self.table.word.phoneme_mapper.arpabet_to_disc
+        else:
+            d = self.table.word.phoneme_mapper.baldey_to_disc
+        if self.phoneme in d.keys():
+            return d[self.phoneme]
+        else:
+            d = self.table.word.phoneme_mapper.ipa_to_disc
+            if self.ipa in d.keys():
+                return d[self.ipa]
         
         
 
@@ -322,9 +334,12 @@ def select_words(words, n_syllables = None, language = None, is_word = None):
 
 
 def make_mald_syllables_with_celex(word):
-    assert word.table.n_phonemes == word.celex_word.n_phonemes
-    n_phonemes = word.celex_word.n_phonemes
     word.syllables = []
+    # assert word.table.n_phonemes == word.celex_word.n_phonemes
+    if word.table.n_phonemes != word.celex_word.n_phonemes:
+        handle_unequal_phonemes_mald(word)
+        return
+    n_phonemes = word.celex_word.n_phonemes
     phoneme_index = 0
     arpabet_syllables = word.celex_word.arpabet_syllables
     for syllable_index,syllable in enumerate(arpabet_syllables):
@@ -337,6 +352,56 @@ def make_mald_syllables_with_celex(word):
         stress = x=word.celex_word.stress_list[syllable_index]
         syllable = Syllable(phonemes,stress, syllable_index, word, 'celex')
         word.syllables.append(syllable)
+
+def handle_unequal_phonemes_mald(word):
+    align_phonemes.set_textgrid_phonemes_syllable_index_mald(word)
+    syllable_index = 0
+    phonemes = []
+    word_has_stress = False
+    for i,phoneme in enumerate(word.table.phonemes):
+        # print(i,word)
+        if syllable_index != phoneme.syllable_index:
+            syllable = Syllable(phonemes,stress, syllable_index,word, 'celex ul')
+            word.syllables.append(syllable)
+            phonemes = []
+        syllable_index = phoneme.syllable_index
+        if word.syllable_index_fixed:
+            if syllable_index < len(word.celex_word.stress_list) - 1:
+                stress = word.celex_word.stress_list[syllable_index+1]
+            if not word_has_stress and i >= len(word.table.phonemes):
+                stress = 'primary'
+        else:
+            stress = word.celex_word.stress_list[syllable_index]
+        if stress == 'primary': word_has_stress = True
+        phonemes.append(phoneme)
+    if phonemes:
+        syllable = Syllable(phonemes,stress, syllable_index,word, 'celex ul')
+        word.syllables.append(syllable)
+    if not word_has_stress and word.syllable_index_fixed: 
+        word.syllables[0].stress = 'primary'
+
+def make_mald_syllables_with_prosodic(word):
+    d = mswp.load_json(word.word)
+    n_phonemes_prosodic = mswp.dict_to_n_phonemes(d)
+    # print(word.table.n_phonemes,n_phonemes_prosodic,word)
+    assert word.table.n_phonemes == n_phonemes_prosodic
+    word.syllables = []
+    phoneme_index = 0
+    for syllable_index,syllable in enumerate(d['syllables']):
+        phonemes = []
+        for _ in range(len(syllable['arpabet'].split(' '))):
+            phoneme = word.table.phonemes[phoneme_index]
+            phoneme.syllable_index = syllable_index
+            phonemes.append(phoneme)
+            phoneme_index += 1
+        stress = syllable['stress_type']
+        if stress == 'P':stress = 'primary'
+        elif stress == 'S':stress = 'secondary'
+        elif stress == 'U':stress = 'no stress'
+        syllable = Syllable(phonemes,stress, syllable_index, word, 'prosodic')
+        word.syllables.append(syllable)
+
+
             
 def make_baldey_syllables_with_celex(word):
     assert word.table.n_phonemes == word.celex_word.n_phonemes
@@ -355,5 +420,3 @@ def make_baldey_syllables_with_celex(word):
         syllable = Syllable(phonemes,stress, syllable_index, word, 'celex')
         word.syllables.append(syllable)
     
-def make_mald_syllables_with_prosodic(word):
-    return None
