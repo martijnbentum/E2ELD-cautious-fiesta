@@ -167,6 +167,65 @@ class Word:
             if char == '-': getattr(self,name).append( char )
             else: getattr(self,name).append( mapper[char] )
 
+    @property
+    def phonemes(self):
+        if hasattr(self,'_phonemes'): return self._phonemes
+        syllable_index = 0
+        stressed = False
+        phoneme_index = 0
+        self._phonemes = []
+        for p in self.disc:
+            if p == '-': 
+                syllable_index += 1
+                stressed = False
+            elif p == "'": stressed = True
+            elif p in ['"','~',' ']: continue
+            else:
+                phoneme = Phoneme(p,'disc',phoneme_index, syllable_index,
+                    self, stressed)
+                self._phonemes.append(phoneme)
+                phoneme_index +=1
+        return self._phonemes
+
+class Phoneme:
+    def __init__(self, phoneme, phoneme_set, phoneme_index, syllable_index,
+        word, stressed):
+        self.phoneme = phoneme
+        self.phoneme_set = phoneme_set
+        self.phoneme_index = phoneme_index
+        self.syllable_index = syllable_index
+        self.word = word
+        self.stressed = stressed
+
+    def __repr__(self):
+        m = self.ipa.ljust(4) + '| ' + str(self.phoneme_index) + ' | '
+        m += str(self.syllable_index) + ' | '
+        m += str(self.stressed)
+        return m
+
+    @property
+    def ipa(self):
+        disc_to_ipa = self.word.parent.phoneme_mapper.disc_to_ipa
+        return disc_to_ipa[self.phoneme]
+
+    @property
+    def arpabet(self):
+        disc_to_arpabet= self.word.parent.phoneme_mapper.disc_to_arpabet
+        return disc_to_arpabet[self.phoneme]
+
+    @property
+    def baldey(self):
+        disc_to_baldey= self.word.parent.phoneme_mapper.disc_to_baldey
+        return disc_to_baldey[self.phoneme]
+
+    @property
+    def cgn(self):
+        disc_to_cng= self.word.parent.phoneme_mapper.disc_to_cgn
+        return disc_to_cgn[self.phoneme]
+
+    @property
+    def disc(self):
+        return self.phoneme
 
 def open_cd(filename):
     with open(filename) as fin:
