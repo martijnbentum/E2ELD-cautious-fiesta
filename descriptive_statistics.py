@@ -1,10 +1,12 @@
 import celex
 import word
+from collections import Counter
 
 def collect_syllables_ld(w = None, language = 'dutch'):
     if not w: 
         w = word.Words()
-    words = [x for x in w.words if x.language == 'dutch' and x.is_word]
+    words = [x for x in w.words if x.language == language and x.is_word]
+    words = [x for x in words if not x.syllable_error]
     syllables = []
     for x in words:
         syllables.extend(x.syllables)
@@ -12,7 +14,7 @@ def collect_syllables_ld(w = None, language = 'dutch'):
 
 
 def collect_syllables_celex(c = None, language = 'dutch'):
-    if not c: c = celex.Celex('dutch') 
+    if not c: c = celex.Celex(language) 
     syllables = []
     for x in c.words:
         for syllable in x.ipa_syllables:
