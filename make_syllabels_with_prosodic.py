@@ -37,3 +37,8 @@ def load_json(word):
     return d
     
     
+def dict_to_n_phonemes(d):
+    n = 0
+    for s in d['syllables']:
+        n += len(s['arpabet'].split(' '))
+    return n
