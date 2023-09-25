@@ -138,6 +138,8 @@ class Word:
         else: 
             try:make_mald_syllables_with_prosodic(self)
             except AssertionError: self.syllable_error = True
+        if not hasattr(self,'syllables') or not self.syllables:
+            self.syllable_error = True
 
     def _make_baldey_syllables(self):
         self.syllable_error = False
@@ -199,7 +201,6 @@ class Syllable:
     def __init__(self, phonemes, stress, index, word, source):
         self.phonemes = phonemes
         self.stress = stress
-        self.stressed = self.stress == 'primary'
         self.start_time = self.phonemes[0].start_time
         self.end_time = self.phonemes[-1].end_time
         self.duration = self.end_time - self.start_time
@@ -254,6 +255,10 @@ class Syllable:
         for phoneme in phonemes:
             self._ipa.append( to_ipa[phoneme] )
         return ' '.join(self._ipa)
+
+    @property
+    def stressed(self):
+        return self.stress == 'primary'
 
 class Phoneme:
     def __init__(self, line, table, phoneme_index):
