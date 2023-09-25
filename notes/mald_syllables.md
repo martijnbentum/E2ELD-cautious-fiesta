@@ -71,7 +71,7 @@ In total 25,426 words were syllabified (based on celex or prosodic)
 |ɹ ɪ|354|53|301|airily|ɛ ɹ ɪ l i|
 
 ### syllable with variable stress descriptive_statistics.stress_variability()
-18 syllable types with atleast 10 tokens with percentage stressed between .3 & .7
+35 syllable types with atleast 50 tokens with percentage stressed between .4 & .6
 
 ```python
 {'l ɪ': {'stressed': 158,
