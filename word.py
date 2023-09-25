@@ -353,6 +353,13 @@ def make_mald_syllables_with_celex(word):
         syllable = Syllable(phonemes,stress, syllable_index, word, 'celex')
         word.syllables.append(syllable)
 
+def _check_mald_word_syllable_indices(word):
+    for i, syllable in enumerate(word.syllables):
+        if i == syllable.index: continue
+        syllable.index = i
+        for phoneme in syllable.phonemes:
+            phoneme.syllable_index = i
+
 def handle_unequal_phonemes_mald(word):
     align_phonemes.set_textgrid_phonemes_syllable_index_mald(word)
     syllable_index = 0
@@ -379,6 +386,7 @@ def handle_unequal_phonemes_mald(word):
         word.syllables.append(syllable)
     if not word_has_stress and word.syllable_index_fixed: 
         word.syllables[0].stress = 'primary'
+    _check_mald_word_syllable_indices(word)
 
 def make_mald_syllables_with_prosodic(word):
     d = mswp.load_json(word.word)
