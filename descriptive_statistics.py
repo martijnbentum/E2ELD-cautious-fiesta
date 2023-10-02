@@ -39,7 +39,8 @@ def baldey_syllable_dict(syllables = None, w = None):
     if not syllables: syllables = collect_syllables_ld(w, language = 'dutch')
     return _syllable_dict(syllables)
 
-def _stress_variability(syllable_dict, minimal_count, perc_delta):
+def _stress_variability(syllable_dict, minimal_count, perc_delta,
+    n_include = None):
     d = {}
     variable = {}
     for ipa, syllables in syllable_dict.items():
@@ -54,6 +55,7 @@ def _stress_variability(syllable_dict, minimal_count, perc_delta):
             if len(syllables) < minimal_count: continue
             if perc_stressed < (.5-perc_delta):continue 
             if perc_stressed > (.5 + perc_delta):continue
+            if n_include: syllables = syllables[:n_include]
             variable[ipa] = {'stressed':stressed,'unstressed':unstressed,
                 'syllables':syllables,'perc_stressed':perc_stressed}
     return d, variable
@@ -109,9 +111,10 @@ def top_n_syllable_count_mald(d = None, n = 20):
     _top_n_syllable_type_count(d,n)
 
 def stress_variability_mald(syllable_dict = None, minimal_count = 10,
-        perc_delta = .2):
+        perc_delta = .2, n_include = None):
     if not syllable_dict: syllable_dict = mald_syllable_dict()
-    return _stress_variability(syllable_dict, minimal_count, perc_delta)
+    return _stress_variability(syllable_dict, minimal_count, perc_delta, 
+        n_include)
 
 # ------------------------------------------------------------------------------
 
