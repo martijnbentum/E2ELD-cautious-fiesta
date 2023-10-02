@@ -28,6 +28,9 @@
 |stressed|328|310|137|50|860|
 |unstressed|236|200|123|30|722|
 
+![Screenshot 2023-10-02 at 10 47 16](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/96b9d82f-22cd-413b-b5c5-ba298ef733f0)
+
+
 ### top 20 syllable types with highest token counts
 |syllable|count|stressed|unstressed|word|word ipa|
 |--------|-----|--------|----------|----|--------|
