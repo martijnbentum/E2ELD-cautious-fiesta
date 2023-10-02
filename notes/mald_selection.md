@@ -14,6 +14,8 @@ are stressed or unstressed (well balanced)
 |stressed|166|159|64|42|530|
 |unstressed|158|149|77|30|466|
 
+![Screenshot 2023-10-02 at 16 21 00](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/a5d908e9-af69-42e6-aa65-2482c58eaf34)
+
 
 syllable list
 
