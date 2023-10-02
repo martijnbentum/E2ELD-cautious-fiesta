@@ -1,6 +1,9 @@
 import celex
 import word
 from collections import Counter
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.stats import gaussian_kde
 
 def collect_syllables_ld(w = None, language = 'dutch'):
     if not w: 
@@ -109,4 +112,23 @@ def stress_variability_mald(syllable_dict = None, minimal_count = 10,
         perc_delta = .2):
     if not syllable_dict: syllable_dict = mald_syllable_dict()
     return _stress_variability(syllable_dict, minimal_count, perc_delta)
+
+# ------------------------------------------------------------------------------
+
+def plot_duration_density(w = None, language = 'dutch'):
+    if not w: w = word.Words()
+    syllables = collect_syllables_ld(w, language = language)
+    no_stress = [x.duration for x in syllables if not x.stressed]
+    stress = [x.duration for x in syllables if x.stressed]
+    x = np.linspace(0, 1, 1000)
+    density_no_stress = gaussian_kde(no_stress)
+    density_stress = gaussian_kde(stress)
+    plt.clf()
+    plt.ion()
+    plt.plot(x, density_no_stress(x), label = 'unstressed')
+    plt.plot(x, density_stress(x), label = 'stressed')
+    plt.legend()
+    plt.grid(alpha = .3)
+    plt.title('Duration stressed and unstressed '+language+' syllables')
+    
     
