@@ -46,6 +46,9 @@ In total 25,426 words were syllabified (based on celex or prosodic)
 |stressed|239|202|121|3|785|
 |unstressed|195|180|102|30|616|
 
+![Screenshot 2023-10-02 at 10 47 16](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/681fa736-23c6-497b-9cc1-a3911c43d1ae)
+
+
 ### top 20 syllable types with highest token counts
 |syllable|count|stressed|unstressed|word|word ipa|
 |--------|-----|--------|----------|----|--------|
