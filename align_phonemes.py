@@ -21,6 +21,7 @@ vowels.append('ɝ')
 vowels.append('aʊ')
 vowels.append('ɑ̃ː')
 vowels.append('iː')
+vowels.append('ɑu')
 
 
 consonants = ipasymbols.phonlist(query={'type': ["pulmonic", "non-pulmonic"]})
