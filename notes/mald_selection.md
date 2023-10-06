@@ -16,27 +16,34 @@ are stressed or unstressed (well balanced)
 
 ![Screenshot 2023-10-02 at 16 21 00](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/a5d908e9-af69-42e6-aa65-2482c58eaf34)
 
+### vowel duration
+||mean|median|std|min|max|
+|-|---|------|---|---|---|
+|stressed|72|60|45|30|290|
+|unstressed|68|50|42|30|238|
+
+<img width="586" alt="Screenshot 2023-10-06 at 16 18 24" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/019b25f9-c904-4896-8fb1-fc4cd62620ee">
 
 syllable list
 
-l ɪ             295
-s ɪ             277
-t ɪ             252
-b ɪ             192
-s ɝ             191
-k ɑ n           137
-i               110
-aʊ t            98
-p i             89
-m ɝ             87
-j u             85
-w eɪ            79
-m æ n           72
-s t ɪ           67
-æ n             66
-b ai            59
-f i             59
-h ɛ d           54
-h aʊ s          53
-m ai            52
-s ai d          50
+- l ɪ             295
+- s ɪ             277
+- t ɪ             252
+- b ɪ             192
+- s ɝ             191
+- k ɑ n           137
+- i               110
+- aʊ t            98
+- p i             89
+- m ɝ             87
+- j u             85
+- w eɪ            79
+- m æ n           72
+- s t ɪ           67
+- æ n             66
+- b ai            59
+- f i             59
+- h ɛ d           54
+- h aʊ s          53
+- m ai            52
+- s ai d          50
