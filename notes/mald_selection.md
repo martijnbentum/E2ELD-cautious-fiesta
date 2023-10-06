@@ -6,7 +6,7 @@ Selected syllables
 Syllable type with minimally 50 occurences and of 45 - 55% occurences
 are stressed or unstressed (well balanced)
 
-
+Number of syllables 2,424
 
 ### syllable duration
 ||mean|median|std|min|max|
