@@ -260,6 +260,26 @@ class Syllable:
     def stressed(self):
         return self.stress == 'primary'
 
+    @property
+    def vowel(self):
+        vowel = []
+        for phoneme in self.phonemes:
+            if phoneme.phoneme_type == 'vowel': vowel.append(phoneme)
+        if len(vowel) > 1:
+            for i,phoneme in enumerate(vowel):
+                if i >= len(vowel) -1: break
+                assert phoneme.phoneme_index == vowel[i+1].phoneme_index - 1
+            v = copy.copy(vowel[0])
+            for phoneme in vowel[1:]:
+                v.phoneme += ' ' + phoneme.phoneme
+            v.start_time = vowel[0].start_time
+            v.end_time = vowel[-1].end_time
+            v.duration = v.end_time - v.start_time
+            vowel = v
+        else: vowel = vowel[0]
+        return vowel
+            
+
 class Phoneme:
     def __init__(self, line, table, phoneme_index):
         self.line = line
@@ -310,6 +330,13 @@ class Phoneme:
             d = self.table.word.phoneme_mapper.ipa_to_disc
             if self.ipa in d.keys():
                 return d[self.ipa]
+
+    @property
+    def phoneme_type(self):
+        if self.ipa in align_phonemes.vowels: return 'vowel'
+        if self.ipa in align_phonemes.consonants: return 'consonant'
+        raise ValueError(self.ipa,'phoneme type not found')
+
         
         
 
