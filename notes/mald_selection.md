@@ -1,4 +1,13 @@
 # Mald dataset, English words 1 speaker
+
+Developped code in respository to train probing classifier based on wav2vec 2.0 feature vectors
+https://github.com/martijnbentum/CGN_AUDIO_EXTRACT/tree/master/ld
+
+Result based on dataset described below:
+
+<img width="608" alt="Screenshot 2023-11-01 at 15 01 06" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/261ab6ef-8b4a-4772-b2df-cc312f11ae8c">
+
+
 Selected syllables
 '''python
  _,sd = ds.stress_variability_mald(d,50,0.05,n_include=None)  
