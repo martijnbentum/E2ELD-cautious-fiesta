@@ -1,4 +1,18 @@
 # Mald dataset, English words 1 speaker
+
+Developed code in CGN audio extract respository to train probing classifier based on wav2vec 2.0 feature vectors
+https://github.com/martijnbentum/CGN_AUDIO_EXTRACT/tree/master/ld
+
+The classifier is a multi-layer perceptron from the scikit-learn module
+
+Probing classifier results based on dataset described below.
+Classifiers trained on mean feature vector (based on the time frames within the vowel, syllable and all frames of the word. Minimally 1 frame is used even if the vowel or syllable is shorter.
+
+Word condition is a control. Expected it to perform at chance level, because the input to the classifier is the mean of all frames from the whole word (not just the target syllable) so unsure why it is still performing above chance.
+
+<img width="608" alt="Screenshot 2023-11-01 at 15 01 06" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/261ab6ef-8b4a-4772-b2df-cc312f11ae8c">
+
+
 Selected syllables
 '''python
  _,sd = ds.stress_variability_mald(d,50,0.05,n_include=None)  
