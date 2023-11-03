@@ -3,8 +3,8 @@ import subprocess
 
 def extract_section(input_filename, output_filename, start_time, end_time):
     duration = end_time - start_time
-    cmd = "sox " + input_filename + " " + output_filename + 
-    cmd += " trim " + str(start_time) + " " + str(duration))
+    cmd = "sox " + input_filename + " " + output_filename  
+    cmd += " trim " + str(start_time) + " " + str(duration)
     print(cmd)
     os.system(cmd)
 
@@ -22,6 +22,7 @@ def occlude_other(input_filename, output_filename, start_time, end_time):
     start_silence = start_time
     end_silence = d['duration'] - end_time
     add_silence(temp_filename, output_filename, start_silence, end_silence)
+    os.remove(temp_filename)
 
     
 def audio_info(filename):
@@ -41,3 +42,8 @@ def soxinfo_to_dict(soxinfo):
     t = x[5].split(': ')[-1].split(' =')[0]
     d['duration'] = clock_to_duration_in_seconds(t)
     return d
+
+def clock_to_duration_in_seconds(t):
+    hours, minutes, seconds = t.split(':')
+    s = float(hours) * 3600 + float(minutes) * 60 + float(seconds)
+    return s
