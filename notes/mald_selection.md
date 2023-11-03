@@ -12,6 +12,10 @@ Word condition is a control. Expected it to perform at chance level, because the
 
 <img width="593" alt="Screenshot 2023-11-03 at 09 38 23" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/e3bc01aa-49d1-4bc4-ba0d-b4235d6da7cf">
 
+Occlusion test. All audio except the target syllable or vowel in the target syllable is set occluded (set to silence). Slightly worse performance.
+
+<img width="576" alt="Screenshot 2023-11-03 at 15 31 13" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/683c32ef-89f5-45f3-97b4-1317877199af">
+
 
 Sanity check with random stress labels:
 
