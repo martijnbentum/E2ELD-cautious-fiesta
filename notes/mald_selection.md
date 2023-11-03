@@ -10,7 +10,12 @@ Classifiers trained on mean feature vector (based on the time frames within the 
 
 Word condition is a control. Expected it to perform at chance level, because the input to the classifier is the mean of all frames from the whole word (not just the target syllable) so unsure why it is still performing above chance.
 
-<img width="608" alt="Screenshot 2023-11-01 at 15 01 06" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/261ab6ef-8b4a-4772-b2df-cc312f11ae8c">
+<img width="593" alt="Screenshot 2023-11-03 at 09 38 23" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/e3bc01aa-49d1-4bc4-ba0d-b4235d6da7cf">
+
+
+Sanity check with random stress labels:
+
+<img width="602" alt="Screenshot 2023-11-03 at 09 38 32" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/24144e72-6c30-4aec-be75-ada108694493">
 
 
 Selected syllables
