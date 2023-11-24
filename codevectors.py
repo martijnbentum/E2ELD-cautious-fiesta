@@ -3,16 +3,15 @@ a codevector is a concatenation of two codebook vectors
 a codevector is represented by a pair of indices
 '''
 
-from . import awd
 import copy
+import general
 import glob
 import json
+import locations
 from matplotlib import pyplot as plt
 import numpy as np
+import phonemes
 import pickle
-from utils import locations
-from utils import general
-from utils import phonemes
 
 fn = glob.glob(locations.codevector_indices + '*.npy')
 fn = [f for f in fn if 'codebook' not in f]
