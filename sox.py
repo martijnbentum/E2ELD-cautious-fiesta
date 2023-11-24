@@ -24,6 +24,18 @@ def occlude_other(input_filename, output_filename, start_time, end_time):
     add_silence(temp_filename, output_filename, start_silence, end_silence)
     os.remove(temp_filename)
 
+
+def convert_to_16khz(input_filename, output_dir):
+    if not os.path.isfile(input_filename):
+        raise ValueError('File not found: ' + input_filename)
+    if not os.path.isdir(output_dir):
+        raise ValueError('Directory not found: ' + output_dir)
+    filename = input_filename.split('/')[-1]
+    cmd = 'sox -r 16000 ' + input_filename + ' ' + output_dir 
+    cmd += filename
+    print(cmd)
+    os.system(cmd)
+
     
 def audio_info(filename):
     o = sox_info(filename)
