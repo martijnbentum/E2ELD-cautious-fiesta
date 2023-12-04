@@ -24,8 +24,11 @@ mald_wordset_filename = mald + 'word_set.txt'
 mald_table_directory = mald + 'tables/'
 mald_prosodic_syllables_directory = mald + 'prosodic_syllables/'
 
+mald_audio_infos = mald + 'audio_infos/'
+
 mald_codevector_indices = mald + 'codevector_indices/'  
 codebook_filename = mald_codevector_indices + 'codebook.npy'
+mald_codevector_phoneme_count = mald + 'codevector_phoneme_count/'
 
 mald_variable_stress_syllable_directory = mald + 'variable_stress_syllable/'
 
