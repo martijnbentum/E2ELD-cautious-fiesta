@@ -10,10 +10,12 @@ import json
 import locations
 from matplotlib import pyplot as plt
 import numpy as np
-import phonemes
+import phoneme_mapper
 import pickle
+import sox
+import word
 
-fn = glob.glob(locations.codevector_indices + '*.npy')
+fn = glob.glob(locations.mald_codevector_indices + '*.npy')
 fn = [f for f in fn if 'codebook' not in f]
 
 
@@ -33,11 +35,13 @@ def load_codebook(filename=locations.codebook_filename):
 class Frames:
     '''object to handle wav2vec2 linking frames to phoneme transcriptions
     each frame has codebook indices representing a codevector
-    each frame can be linked to a phoneme via the awd transcription
+    each frame can be linked to a phoneme via the transcription
     each frame has a start and end time
     the frames have a step of 20ms and a duration of 25ms
     '''
-    def __init__(self, fn = fn):
+    def __init__(self, fn = fn, words = None):
+        if not words: words = word.Words()
+        self.words = words
         self.frames = []
         self.filenames = []
         for f in fn:
@@ -82,8 +86,7 @@ class Frame:
         self.codebook_indices = codebook_indices
         self.parent = parent
         self.filename = filename
-        self.cgn_id = filename.split('_')[-1].split('.')[0]
-        self.awd_filename = locations.local_awd + self.cgn_id + '.awd'
+        self.name = filename.split('/')[-1].split('.')[0]
         self.start, self.end = frame_index_to_times(index)
         self.i1, self.i2 = map(int,self.codebook_indices)
         self.key = (self.i1, self.i2)
@@ -101,13 +104,14 @@ class Frame:
         return hash((self.i1, self.i2))
 
     @property
-    def awd(self):
-        '''the forced aligned transcription file from CGN
-        to link a frame to a specific phoneme
-        '''
-        if hasattr(self,'_awd'): return self._awd
-        self._awd = self.parent.awds.get_awd(self.awd_filename)
-        return self._awd
+    def word(self):
+        if hasattr(self,'_word'): return self._word
+        self._word = self.parent.words.get_word(self.name.lower())
+        if len(self._word) > 1: 
+            for x in self._word:
+                if x.dataset == 'mald': self._word = x
+        else: self._word = self._word[0]
+        return self._word
 
     @property
     def phoneme(self):
@@ -120,8 +124,9 @@ class Frame:
         s1, e1 = self.start,self.end
         self._phoneme = None
         self._phoneme_duration = 0
-        for phoneme in self.awd.phonemes:
-            s2, e2 = phoneme.start, phoneme.end
+        phonemes = _get_all_mald_phonemes(self.word)
+        for phoneme in phonemes:
+            s2, e2 = phoneme.start_time, phoneme.end_time
             if general.overlap(s1,e1,s2,e2):
                 duration = general.overlap_duration(s1,e1,s2,e2)
                 if self._phoneme and duration < self._phoneme_duration: 
@@ -169,9 +174,8 @@ def frames_to_phoneme_counter(frames):
     d = {}
     for frame in frames:
         phoneme = frame.phoneme
-        if phoneme.label == '': phoneme.label = 'silence'
-        if not phoneme.label in d.keys(): d[phoneme.label] = 0
-        d[phoneme.label] += 1
+        if not phoneme.ipa in d.keys(): d[phoneme.ipa] = 0
+        d[phoneme.ipa] += 1
     return d
 
 
@@ -196,7 +200,7 @@ def frames_to_count_dict(frames, save = False):
     d = frames_to_phoneme_counter(frames)
     d = dict_to_sorted_dict(d)
     if save:
-        filename = locations.codebook_indices_phone_counts_dir 
+        filename = locations.mald_codevector_phoneme_count
         filename += '-'.join(map(str,key)) + '.json'
         json.dump(d, open(filename, 'w'))
     return d
@@ -387,5 +391,30 @@ def plot_phoneme_confusion_matrix(d, use_ipa = True):
     plt.show()
     
 
+def _get_all_mald_phonemes(word):
+    '''get all phonemes for a word.
+    '''
+    table = word.table
+    duration = word.audio_info['duration']
+    start_phoneme, end_phoneme = None, None
+    if not table.phonemes: return []
+    if table.phonemes[0].start_time > 0:
+        start_phoneme = copy.copy(table.phonemes[0])
+        start_phoneme.end_time = start_phoneme.start_time
+        start_phoneme.start_time = 0
+        start_phoneme.line = copy.copy(start_phoneme.line)
+        start_phoneme.line[1] = 'silence'
+    if table.phonemes[-1].end_time < word.duration:
+        end_phoneme = copy.copy(table.phonemes[-1])
+        end_phoneme.start_time = end_phoneme.end_time
+        end_phoneme.end_time = duration
+        end_phoneme.line = copy.copy(end_phoneme.line)
+        end_phoneme.line[1] = 'silence'
+    output = []
+    if start_phoneme: output.append(start_phoneme)
+    for x in word.table.phonemes:
+        output.append(x)
+    if end_phoneme: output.append(end_phoneme)
+    return output
    
 
