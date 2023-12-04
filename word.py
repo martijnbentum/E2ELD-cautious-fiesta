@@ -1,5 +1,6 @@
 import align_phonemes
 import celex
+import json
 import locations
 import make_syllabels_with_prosodic as mswp
 import metadata
@@ -146,6 +147,14 @@ class Word:
         if hasattr(self,'celex_word') and self.celex_word:
             make_baldey_syllables_with_celex(self)
         else: self.syllable_error = True
+
+    @property
+    def audio_info(self):
+        if hasattr(self,'_audio_info'): return self._audio_info
+        self.audio_info_filename = locations.mald_audio_infos
+        self.audio_info_filename += self.word.upper() + '.json'
+        self._audio_info = json.load(open(self.audio_info_filename))
+        return self._audio_info
 
     @property
     def ipa(self):
@@ -311,6 +320,7 @@ class Phoneme:
 
     @property
     def ipa(self):
+        if self.line[1] == 'silence': return 'silence'
         if self.table.word.dataset == 'mald':
             d = self.table.word.phoneme_mapper.arpabet_to_ipa
         else:
@@ -333,6 +343,7 @@ class Phoneme:
 
     @property
     def phoneme_type(self):
+        if self.ipa == 'silence': return 'silence'
         if self.ipa in align_phonemes.vowels: return 'vowel'
         if self.ipa in align_phonemes.consonants: return 'consonant'
         raise ValueError(self.ipa,'phoneme type not found')
