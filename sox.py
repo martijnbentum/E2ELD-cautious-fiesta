@@ -31,7 +31,7 @@ def convert_to_16khz(input_filename, output_dir):
     if not os.path.isdir(output_dir):
         raise ValueError('Directory not found: ' + output_dir)
     filename = input_filename.split('/')[-1]
-    cmd = 'sox -r 16000 ' + input_filename + ' ' + output_dir 
+    cmd = 'sox ' + input_filename + ' -r 16000 ' + output_dir 
     cmd += filename
     print(cmd)
     os.system(cmd)
