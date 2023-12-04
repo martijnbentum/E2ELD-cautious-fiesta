@@ -219,21 +219,22 @@ def load_count_dict(filename):
 
 def load_all_count_dicts():
     '''load all codevector phoneme count dicts.'''
-    path = locations.codebook_indices_phone_counts_dir + '*.json'
+    path = locations.mald_codevector_phoneme_count+ '*.json'
     filenames = glob.glob(path)
     to_name = codevector_json_filename_to_name
     return dict([[to_name(f), load_count_dict(f)] for f in filenames])
 
 
 def group_phonemes_by_bpc(p):
-    sampa = phonemes.Sampa()
+    ipa = phoneme_mapper.ipa_set
     output = []
-    for c in sampa.consonants:
-        if c in p: output.append(c)
-    for v in sampa.vowels:
-        if v in p: output.append(v)
-    for x in p:
-        if x not in output: output.append(x)
+    for phoneme in ipa:
+        if phoneme in p: output.append(phoneme)
+    for phoneme in p:
+        if phoneme == 'silence': continue
+        if phoneme not in output:
+            output.append(phoneme)
+    output.append('silence')
     return output
 
 def _get_all_phonemes(count_dicts, group_by_bpc = True):
@@ -332,11 +333,10 @@ def compute_codevector_conditional_probability_matrix(d):
     m = m.transpose() / np.sum(m, axis=1)
     return m.transpose()
 
-def plot_phoneme_conditional_probability_matrix(d, use_ipa = True):
+def plot_phoneme_conditional_probability_matrix(d):
     '''plot the conditional probability matrix for P(phoneme | codevector).
     '''
     p = _get_all_phonemes(d)
-    if use_ipa: p = _sampa_to_ipa(p)
     m = compute_phoneme_conditional_probability_matrix(d)
     row_index_max_value = np.argmax(m, axis=0)
     column_indices = np.argsort(row_index_max_value)
@@ -346,11 +346,10 @@ def plot_phoneme_conditional_probability_matrix(d, use_ipa = True):
     ax.yaxis.set_ticks(range(len(p)),p)
     plt.show()
         
-def plot_codevector_conditional_probability_matrix(d, use_ipa = True):
+def plot_codevector_conditional_probability_matrix(d):
     '''plot the conditional probability matrix for P(codevector | phoneme).
     '''
     p = _get_all_phonemes(d)
-    if use_ipa: p = _sampa_to_ipa(p)
     m = compute_codevector_conditional_probability_matrix(d)
     row_index_max_value = np.argmax(m, axis=0)
     column_indices = np.argsort(row_index_max_value)
@@ -378,11 +377,10 @@ def _sampa_to_ipa(p):
         else: ipa_p.append(ipa_d[x])
     return ipa_p
     
-def plot_phoneme_confusion_matrix(d, use_ipa = True):
+def plot_phoneme_confusion_matrix(d):
     '''plot the confusion probability matrix for P(phoneme | phoneme).
     '''
     p = _get_all_phonemes(d)
-    if use_ipa: p = _sampa_to_ipa(p)
     m = compute_phoneme_confusion_matrix(d)
     fig, ax = plt.subplots(figsize=(10,10))
     ax.matshow(m, cmap = 'binary')
