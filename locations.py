@@ -29,6 +29,10 @@ mald_audio_infos = mald + 'audio_infos/'
 mald_codevector_indices = mald + 'codevector_indices/'  
 codebook_filename = mald_codevector_indices + 'codebook.npy'
 mald_codevector_phoneme_count = mald + 'codevector_phoneme_count/'
+mald_codevector_phoneme_count_stress_info = mald + 'codevector_phoneme_count'
+mald_codevector_phoneme_count_stress_info += '_stress_info/'
+mald_codevector_phoneme_count_time_info = mald + 'codevector_phoneme_count'
+mald_codevector_phoneme_count_time_info += '_time_info/'
 
 mald_variable_stress_syllable_directory = mald + 'variable_stress_syllable/'
 

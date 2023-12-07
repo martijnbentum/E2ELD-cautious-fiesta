@@ -142,8 +142,6 @@ class Frame:
         '''
         return self.parent.get_codevector(self.codebook_indices)
 
-            
-
 
 def frame_index_to_times(index, step = 0.02, duration = 0.025):
     '''compute the start and end time for a frame
@@ -166,16 +164,23 @@ def make_frame_dict(frames):
         d[key].append(frame)
     return d
 
-def frames_to_phoneme_counter(frames):
-    '''each frame token is linked to a phoneme
-    a frame type is linked to multiple phonemes
-    count the phonemes that a frame type is linked to
+
+def frames_to_phoneme_counter(frames, add_stress_info = False, 
+    add_time_info = False):
+    '''for frames from a single codevector type, count the phonemes 
+    that are linked to it
     '''
+    if add_stress_info and add_time_info:
+        raise ValueError('cannot add stress and time info')
     d = {}
     for frame in frames:
-        phoneme = frame.phoneme
-        if not phoneme.ipa in d.keys(): d[phoneme.ipa] = 0
-        d[phoneme.ipa] += 1
+        ipa = frame.phoneme.ipa
+        if add_stress_info and ipa != 'silence':
+            if frame.phoneme.stressed: ipa += '_stressed'
+        if add_time_info and ipa != 'silence':
+            ipa += '_' + frame_to_begin_middle_end_all(frame)
+        if not ipa in d.keys(): d[ipa] = 0
+        d[ipa] += 1
     return d
 
 
@@ -193,14 +198,24 @@ def count_dict_to_probability_dict(d):
         od[key] /= total
     return od
 
-def frames_to_count_dict(frames, save = False):
-    '''for each codevector, count the phonemes that are linked to it
+def frames_to_count_dict(frames, add_stress_info = False, 
+    add_time_info = False, save = False):
+    '''for frames from a single codevector type
+    create a count dict for the phonemes linked to the frames
+    optionally stor it as a json file
     '''
+    if add_stress_info and add_time_info:
+        raise ValueError('cannot add stress and time info')
     key = frames[0].key
-    d = frames_to_phoneme_counter(frames)
+    d = frames_to_phoneme_counter(frames, add_stress_info, add_time_info)
     d = dict_to_sorted_dict(d)
     if save:
-        filename = locations.mald_codevector_phoneme_count
+        if add_stress_info:
+            filename = locations.mald_codevector_phoneme_count_stress_info
+        elif add_time_info:
+            filename = locations.mald_codevector_phoneme_count_time_info
+        else:
+            filename = locations.mald_codevector_phoneme_count
         filename += '-'.join(map(str,key)) + '.json'
         json.dump(d, open(filename, 'w'))
     return d
@@ -217,23 +232,67 @@ def load_count_dict(filename):
     return od
 
 
-def load_all_count_dicts():
+def load_all_count_dicts(add_stress_info = False, add_time_info = False):
     '''load all codevector phoneme count dicts.'''
-    path = locations.mald_codevector_phoneme_count+ '*.json'
+    if add_stress_info and add_time_info:
+        raise ValueError('cannot add stress and time info')
+    if add_stress_info:
+        path = locations.mald_codevector_phoneme_count_stress_info + '*.json'
+    elif add_time_info:
+        path = locations.mald_codevector_phoneme_count_time_info + '*.json'
+    else:
+        path = locations.mald_codevector_phoneme_count+ '*.json'
     filenames = glob.glob(path)
     to_name = codevector_json_filename_to_name
     return dict([[to_name(f), load_count_dict(f)] for f in filenames])
 
+def _check_time_info(p):
+    for x in p:
+        if '_begin' in x or '_middle' in x or '_end' in x: return True
+    return False
 
-def group_phonemes_by_bpc(p):
+def _group_phonemes_by_bpc_time_info(p):
     ipa = phoneme_mapper.ipa_set
     output = []
     for phoneme in ipa:
-        if phoneme in p: output.append(phoneme)
+        if phoneme + '_begin' in p: 
+            output.append(phoneme + '_begin')
+        if phoneme + '_middle' in p: 
+            output.append(phoneme + '_middle')
+        if phoneme + '_end' in p: 
+            output.append(phoneme + '_end')
     for phoneme in p:
         if phoneme == 'silence': continue
         if phoneme not in output:
+            phoneme = phoneme.split('_')[0]
+            if phoneme + '_begin' in p and phoneme + '_begin' not in output: 
+                output.append(phoneme + '_begin')
+            if phoneme + '_middle' in p and phoneme + '_middle' not in output: 
+                output.append(phoneme + '_middle')
+            if phoneme + '_end' in p and phoneme + '_end' not in output: 
+                output.append(phoneme + '_end')
+    output.append('silence')
+    return output
+
+def group_phonemes_by_bpc(p):
+    if _check_time_info(p): return _group_phonemes_by_bpc_time_info(p)
+    ipa = phoneme_mapper.ipa_set
+    output = []
+    for phoneme in ipa:
+        if phoneme in p: 
             output.append(phoneme)
+            if phoneme + '_stressed' in p:
+                output.append(phoneme + '_stressed')
+    for phoneme in p:
+        if phoneme == 'silence': continue
+        if phoneme not in output:
+            if '_stressed' in phoneme: 
+                ns= phoneme.split('_stressed')[0]
+                if ns in p: phoneme = ns
+            output.append(phoneme)
+            ps = phoneme + '_stressed'
+            if ps in p and ps not in output:
+                output.append(phoneme + '_stressed')
     output.append('silence')
     return output
 
@@ -416,3 +475,33 @@ def _get_all_mald_phonemes(word):
     return output
    
 
+def _split_phoneme_time(phoneme):
+    part_duration = phoneme.duration / 3
+    begin = phoneme.start_time, phoneme.start_time + part_duration
+    middle = begin[1], begin[1] + part_duration
+    end = middle[1], phoneme.end_time
+    return begin, middle, end
+
+
+def frame_to_begin_middle_end_all(frame):
+    if not frame.phoneme: return None
+    # if frame.phoneme.duration < .025: return 'all'
+    begin, middle, end = _split_phoneme_time(frame.phoneme)
+
+    s1, e1 = frame.start,frame.end
+    _phoneme = None
+    _phoneme_duration = 0
+    segments = begin, middle, end
+    for segment in segments:
+        s2, e2 = segment
+        if general.overlap(s1,e1,s2,e2):
+            duration = general.overlap_duration(s1,e1,s2,e2)
+            if _phoneme and duration < _phoneme_duration: 
+                continue
+            _phoneme = segment
+            _phoneme_duration = duration
+    if _phoneme == begin: return 'begin'
+    elif _phoneme == middle: return 'middle'
+    elif _phoneme == end: return 'end'
+    else: raise ValueError('unknown segment', segment, segments)
+    
