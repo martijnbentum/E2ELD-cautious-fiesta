@@ -4,11 +4,12 @@ Precision, recall f1-score for stress / no stress distinction based on codevecto
    |---------|-------------|---------|-----------|---------|
   | no_stress |       0.73 |     0.89   |   0.80  |  119229 |
    |   stress  |     0.86   |   0.68   |   0.76   | 120607|  
+   | |
    |accuracy| | | 0.78 | 239836 |
    | macro avg   |    0.79   |   0.78   |   0.78   | 239836|
 | weighted avg    |   0.80   |   0.78    |  0.78   | 239836|
 
-
+Matthews correlation coefficient: 0.577
 
 P (phoneme | codevector)  (vowels split in stressed and non-stressed versions)
 
