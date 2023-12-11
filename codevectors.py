@@ -404,6 +404,7 @@ def plot_phoneme_conditional_probability_matrix(d):
     ax.matshow(m, aspect = 150, cmap = 'binary')
     ax.yaxis.set_ticks(range(len(p)),p)
     plt.show()
+    return m
         
 def plot_codevector_conditional_probability_matrix(d):
     '''plot the conditional probability matrix for P(codevector | phoneme).
@@ -417,6 +418,7 @@ def plot_codevector_conditional_probability_matrix(d):
     ax.matshow(m, aspect = 150,vmax=.05, cmap = 'binary')
     ax.yaxis.set_ticks(range(len(p)),p)
     plt.show()
+    return m
 
 def compute_phoneme_confusion_matrix(d):
     '''compute the confusion probability matrix for P(phoneme | phoneme).
@@ -504,4 +506,76 @@ def frame_to_begin_middle_end_all(frame):
     elif _phoneme == middle: return 'middle'
     elif _phoneme == end: return 'end'
     else: raise ValueError('unknown segment', segment, segments)
+
+def combine_count_dicts(d, keys):
+    output_d = {}
+    for key in keys:
+        count_dict = d[key]
+        for phoneme, count in count_dict.items():
+            if phoneme not in output_d.keys(): output_d[phoneme] = 0
+            output_d[phoneme] += count
+    output_d = dict_to_sorted_dict(output_d)
+    return output_d
+        
+def get_vowels(d):
+    p = _get_all_phonemes(d)
+    vowels = p[p.index('eɪ'):-2]
+    return vowels
+
+def aggregate_vowel_codevector_phoneme_counts(d):
+    '''aggregates phoneme counts for codevectors that are linked to vowels.
+    for each vowel select a set of codevectors with highest count for that vowel.
+    aggregate the phoneme counts for those codevectors.
+    do this for both the stressed and unstressed version of the vowel
+    '''
+    phonemes = _get_all_phonemes(d)
+    vowels = get_vowels(d)
+    m = compute_phoneme_conditional_probability_matrix(d)
+    row_index_max_value = np.argmax(m, axis=0)
+    all_keys = list(d.keys())
+    output_d = {}
+    for vowel in vowels:
+        index = phonemes.index(vowel)
+        vowel_indices = np.where(row_index_max_value == index)[0]
+        keys = [all_keys[i] for i in vowel_indices]
+        output_d[vowel] = combine_count_dicts(d, keys)
+    return output_d
+        
+def phoneme_count_dict_to_stress_no_stress(input_d):
+    output_d = {'stress':0, 'no_stress':0}
+    for phoneme, count in input_d.items():
+        if '_stressed' in phoneme: output_d['stress'] += count
+        else: output_d['no_stress'] += count
+    return output_d
+
+def _aggregate_phoneme_counts_to_stress_no_stress(input_d):
+    output_d = {'stress':{}, 'no_stress':{}}
+    for phoneme, count_dict in input_d.items():
+        name = 'stress' if '_stressed' in phoneme else 'no_stress'
+        temp = phoneme_count_dict_to_stress_no_stress(count_dict)
+        for k, count in temp.items():
+            if k not in output_d[name].keys(): output_d[name][k] = 0
+            output_d[name][k] += count
+    return output_d
+
+def ground_truth_hyp_dict_to_classification_report(input_d):
+    from sklearn.metrics import classification_report, matthews_corrcoef
+    gt, hyp = [], []
+    for k, v in input_d.items():
+        for kk, vv in v.items():
+            gt.extend([k] * vv)
+            hyp.extend([kk] * vv)
+    print(classification_report(gt, hyp))
+    print('matthews correlation coefficient',matthews_corrcoef(gt, hyp))
+    return gt, hyp
+
+def classification_report_codevector_vowel_stress(d):
+    o = aggregate_vowel_codevector_phoneme_counts(d)
+    o = _aggregate_phoneme_counts_to_stress_no_stress(o)
+    gt, hyp = ground_truth_hyp_dict_to_classification_report(o)
+    return gt, hyp
+        
     
+
+    
+
