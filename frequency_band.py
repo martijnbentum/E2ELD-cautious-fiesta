@@ -28,3 +28,9 @@ def plot_power_spectrum(signal, sample_rate = 16000):
     plt.grid(alpha=0.3)
     plt.show()
 
+def frequency_band_to_db(freq_lower_bound, freq_upper_band, frequencies, power_spectrum,
+    baseline_power = 10**-12):
+    lower_index = np.where(frequencies >= freq_lower_bound)[0][0]
+    upper_index = np.where(frequencies <= freq_upper_band)[0][-1]
+    power = np.sum(power_spectrum[lower_index:upper_index])
+    return 10 * np.log10(power / baseline_power)
