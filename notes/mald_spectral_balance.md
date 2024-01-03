@@ -1,4 +1,4 @@
-Ik heb de spectral balance (zie artikel Sluijter & van Heuven 1994 in bijlage) berekend voor alle klinkers in all woorden in de MALD dataset. In totaal 67K klinkers.
+Ik heb de spectral balance (zie artikel Sluijter & van Heuven 1994, Spectral balance as an acoustic correlate of linguistic stress) berekend voor alle klinkers in all woorden in de MALD dataset. In totaal 67K klinkers.
 Spectral balance wordt berekend door de intensiteit van vier frequentie banden te berekenen
 0 - 500
 500 - 1000
@@ -8,26 +8,29 @@ Ze laten zien dat een lineaire discriminant analyse (LDA) goed onderscheid kan m
 
 Als je de vier intensiteit waardes voor de frequentie banden gebruikt om een LDA te trainen krijg je op ongeziene data de volgende performance op het voorspellen van klemtoon:
 
-             | precision   | recall  |f1-score  | support
-         0.0   |   0.86      0.84   |   0.85   |  13482
-         1.0    |   0.77      0.79   |   0.78   |   8782
-   macro avg     |  0.81      0.82    |  0.82   |  22264
-weighted avg     |  0.82      0.82     | 0.82   |  22264
+   |         |  precision  |  recall | f1-score  | support |
+   |---------|-------------|---------|-----------|---------|
+  | no_stress |       0.86 |     0.84   |   0.85  |  13482 |
+   |   stress  |     0.77   |   0.79   |   0.78   | 8782|  
+   | |
+   |accuracy| | | 0.78 | 22264 |
+   | macro avg   |    0.81   |   0.82   |   0.82   | 22264|
+| weighted avg    |   0.802  |   0.82    |  0.82   | 22264|
 
 Matthews correlation coefficient: 0.631
 
-De LDA doet het iets beter dan de codevectors zie onder. De median lengte van een klinker is 62 milliseconden, dus deze analyse ziet wel ruim 2 keer meer input dan een codevector (25 ms).
+De LDA doet het iets beter dan de codevectors (zie onder). De median lengte van een klinker is 62 milliseconden, dus deze analyse ziet wel ruim 2 keer meer input dan een codevector (25 ms).
 
 MLP performance op basis van codevectors
 
-              precision    recall  f1-score   support
-
-   no_stress       0.73      0.89      0.80    119229
-      stress       0.86      0.68      0.76    120607
-
-    accuracy                           0.78    239836
-   macro avg       0.79      0.78      0.78    239836
-weighted avg       0.80      0.78      0.78    239836
+   |         |  precision  |  recall | f1-score  | support |
+   |---------|-------------|---------|-----------|---------|
+  | no_stress |       0.73 |     0.89   |   0.80  |  119229 |
+   |   stress  |     0.86   |   0.68   |   0.76   | 120607|  
+   | |
+   |accuracy| | | 0.78 | 239836 |
+   | macro avg   |    0.79   |   0.78   |   0.78   | 239836|
+| weighted avg    |   0.80   |   0.78    |  0.78   | 239836|
 
 Matthews correlation coefficient: 0.577
 
