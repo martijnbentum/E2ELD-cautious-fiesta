@@ -8,14 +8,11 @@ Ze laten zien dat een lineaire discriminant analyse (LDA) goed onderscheid kan m
 
 Als je de vier intensiteit waardes voor de frequentie banden gebruikt om een LDA te trainen krijg je op ongeziene data de volgende performance op het voorspellen van klemtoon:
 
-              precision    recall  f1-score   support
-
-         0.0       0.86      0.84      0.85     13482
-         1.0       0.77      0.79      0.78      8782
-
-    accuracy                           0.82     22264
-   macro avg       0.81      0.82      0.82     22264
-weighted avg       0.82      0.82      0.82     22264
+             | precision   | recall  |f1-score  | support
+         0.0   |   0.86      0.84   |   0.85   |  13482
+         1.0    |   0.77      0.79   |   0.78   |   8782
+   macro avg     |  0.81      0.82    |  0.82   |  22264
+weighted avg     |  0.82      0.82     | 0.82   |  22264
 
 Matthews correlation coefficient: 0.631
 
