@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 import word
 
 def load_audio_file(file_path, sample_rate = 16000, start = 0.0, end = None):
+    '''load an audio file and return the signal and sample rate'''
     if end:
         duration = end - start
     else: duration = None
@@ -16,6 +17,13 @@ def load_audio_file(file_path, sample_rate = 16000, start = 0.0, end = None):
     return signal, sr
 
 def compute_fft(signal, sample_rate = 16000):
+    '''compute the fast fourier transform of a signal
+    returns only the positive frequencies
+    frequencies         a list of frequencies corresponding to the fft_result
+    fft_result          a list of complex numbers -> fourier decomposition
+                        of the signal
+    '''
+        
     fft_result= np.fft.fft(signal)
     frequencies = np.fft.fftfreq(len(signal), 1.0/sample_rate)
     frequencies = frequencies[:int(len(frequencies)/2)] 
@@ -23,11 +31,17 @@ def compute_fft(signal, sample_rate = 16000):
     return frequencies, fft_result
 
 def compute_power_spectrum(signal, sample_rate = 16000):
+    '''compute the power spectrum of a signal
+    frequencies         a list of frequencies corresponding to the fft_result
+    power_spectrum      a list of real numbers -> power of the signal at each
+                        frequency in frequencies
+    '''
     frequencies, fft_result = compute_fft(signal, sample_rate)
     power_spectrum = np.abs(fft_result)**2 / len(signal)
     return frequencies, power_spectrum
 
 def plot_power_spectrum(signal, sample_rate = 16000):
+    '''plot the power spectrum of a signal'''
     frequencies, power_spectrum = compute_power_spectrum(signal, sample_rate)
     plt.ion()
     plt.clf()
@@ -39,12 +53,18 @@ def plot_power_spectrum(signal, sample_rate = 16000):
 
 def frequency_band_to_db(freq_lower_bound, freq_upper_band, frequencies, 
     power_spectrum, baseline_power = 10**-6):
+    '''compute the power in a frequency band and convert to decibels
+    '''
     lower_index = np.where(frequencies >= freq_lower_bound)[0][0]
     upper_index = np.where(frequencies <= freq_upper_band)[0][-1]
     power = np.sum(power_spectrum[lower_index:upper_index])
     return round(10 * np.log10(power / baseline_power), 2)
 
 def get_four_fb_to_db(frequencies, power_spectrum):
+    '''compute the power in four frequency bands and convert to decibels
+    the frequency bands are based on the article Sluijter & van Heuven (1994)
+    to predict stress in vowels.
+    '''
     fb1 = frequency_band_to_db(0, 500, frequencies, power_spectrum)
     fb2 = frequency_band_to_db(500, 1000, frequencies, power_spectrum)
     fb3 = frequency_band_to_db(1000, 2000, frequencies, power_spectrum)
@@ -52,6 +72,11 @@ def get_four_fb_to_db(frequencies, power_spectrum):
     return fb1, fb2, fb3, fb4
 
 def handle_vowel(word, vowel):
+    '''compute the power in four frequency bands and convert to decibels
+    for a specific vowel in a word.
+    word        word class object from word module
+    phoneme     phoneme class object from word module
+    '''
     signal, sr = load_audio_file(word.audio_filename, start=vowel.start_time, 
         end=vowel.end_time)
     frequencies, power_spectrum = compute_power_spectrum(signal)
@@ -60,6 +85,10 @@ def handle_vowel(word, vowel):
     return output
 
 def handle_word(word):
+    '''compute the power in four frequency bands and convert to decibels
+    for every vowel in a word.
+    word        word class object from word module
+    '''
     if not word.table.phonemes: return None
     output = []
     for p in word.table.phonemes:
@@ -73,11 +102,16 @@ def handle_word(word):
     return output
 
 def mald_header():
+    '''header for the vowel spectral balance dataset.
+    dataset is created with handle_mald_words function
+    '''
     h = ['word', 'ipa', 'audio_filename', 'phoneme', 'stressed','phoneme_index']
     h+= ['start_time', 'end_time', 'fb1', 'fb2', 'fb3', 'fb4']
     return h
 
 def handle_mald_words(w = None, save = False):
+    '''create a dataset of vowel spectral balance for the mald dataset
+    '''
     if not w: w = word.Words()
     output = []
     for word in w.words:
@@ -96,6 +130,9 @@ def handle_mald_words(w = None, save = False):
     return output
     
 def make_dataset():
+    '''convert vowel spectral balance dataset to numpy arrays
+    for LDA training.
+    '''
     d = json.load(open('../MALD/mald_spectral_tilt.json'))[1:]
     X = np.zeros((len(d), 4))
     y = np.zeros((len(d), 1))
@@ -105,6 +142,9 @@ def make_dataset():
     return X, y
         
 def train_lda(X, y, test_size = 0.33, report = True):
+    '''train an LDA based on the vowel spectral balance datase 
+    use make_dataset function to create the dataset (X, y)
+    '''
     X_train, X_test, y_train, y_test = train_test_split(
         X,y, test_size = test_size, random_state=42)
     clf = LinearDiscriminantAnalysis()
@@ -115,3 +155,20 @@ def train_lda(X, y, test_size = 0.33, report = True):
     data = {'X_train': X_train, 'X_test': X_test, 'y_train': y_train}
     return clf, data
         
+def plot_lda(X, y):
+    ''' fit an LDA based on data (X) and labels (y) and plot the results
+    '''
+    plt.ion()
+    plt.clf()
+    clf, _ = train_lda(X, y, report = False)
+    tf = clf.transform(X)
+    color = ['navy', 'darkorange']
+    labels = ['no stress', 'stress']
+    for color, i, label in zip(color, [0,1], labels):
+        n = len(tf[y==i])
+        plt.scatter(tf[y==i], np.random.random(n), alpha=.05, color=color,
+            label=label)
+    legend = plt.legend()
+    for lh in legend.legendHandles:
+        lh.set_alpha(1)
+    plt.show()
