@@ -47,3 +47,10 @@ Klinkt dat is een goede aanpak, of hebben jullie andere suggesties?
 In een vervolgstap kunnen we kijken of de transformer lagen wellicht beter presteren door dat ze de duur meenemen.
 
 ![Screenshot 2024-01-03 at 10 33 20](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/bad95e41-6def-4bfb-a7fc-64b1860ed407)
+
+
+Intensity in dB for stressed and unstressed vowels for four frequency bands
+<img width="606" alt="Screenshot 2024-01-04 at 15 13 59" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/68354e46-0a4d-4382-8a64-d5c1c2b9017b">
+
+
+
