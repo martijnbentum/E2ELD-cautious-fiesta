@@ -172,3 +172,30 @@ def plot_lda(X, y):
     for lh in legend.legendHandles:
         lh.set_alpha(1)
     plt.show()
+
+def collect_fb_stressed_unstressed():
+    '''collect the fb values for stressed and unstressed vowels
+    '''
+    d = json.load(open('../MALD/mald_spectral_tilt.json'))[1:]
+    stressed = []
+    unstressed = []
+    for line in d:
+        if line[4]: stressed.append(line[8:])
+        else: unstressed.append(line[8:])
+    return np.array(stressed), np.array(unstressed)
+
+def plot_fb_stressed_unstressed():
+    stressed, unstressed = collect_fb_stressed_unstressed()
+    plt.ion()
+    plt.figure()
+    plt.plot(np.mean(stressed, 0))
+    plt.plot(np.mean(unstressed, 0))
+    plt.xticks([0,1,2,3],
+        labels=['0 - 500','500 - 1000','1000 - 2000','2000 - 4000'])
+    plt.ylabel('Intensity in dB')
+    plt.xlabel('Frequency band')
+    plt.legend(['stressed','unstressed'])
+    plt.grid(alpha=.3)
+
+
+
