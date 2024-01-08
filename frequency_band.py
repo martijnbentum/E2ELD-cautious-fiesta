@@ -162,15 +162,32 @@ def plot_lda(X, y):
     plt.clf()
     clf, _ = train_lda(X, y, report = False)
     tf = clf.transform(X)
-    color = ['navy', 'darkorange']
+    color = ['blue', 'red']
     labels = ['no stress', 'stress']
     for color, i, label in zip(color, [0,1], labels):
+        if i == 0: marker = 'o'
+        else: marker = 'x'
         n = len(tf[y==i])
         plt.scatter(tf[y==i], np.random.random(n), alpha=.05, color=color,
-            label=label)
+            label=label, marker = marker)
     legend = plt.legend()
     for lh in legend.legendHandles:
         lh.set_alpha(1)
+    plt.show()
+
+def plot_lda_hist(X, y):
+    plt.ion()
+    plt.figure()
+    clf, _ = train_lda(X, y, report = False)
+    tf = clf.transform(X)
+    plt.hist(tf[y==0], bins = 50, alpha=0.7, color = 'blue', 
+        label = 'unstressed')
+    plt.hist(tf[y==1], bins = 50, alpha=0.7, color = 'red', 
+        label = 'stressed')
+    plt.grid(alpha=0.3)
+    plt.legend()
+    plt.xlabel('Linear Discriminant score')
+    plt.ylabel('Counts')
     plt.show()
 
 def collect_fb_stressed_unstressed():
