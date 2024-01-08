@@ -48,10 +48,15 @@ In total 25,426 words were syllabified (based on celex or prosodic)
 
 ![Screenshot 2023-10-02 at 10 47 39](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/bc433824-f35a-45f7-baf2-54fbef579a92)
 
-Distribution duration differences between stressed and unstressed vowels in the same word
+Distribution duration differences between stressed and the mean duration of unstressed vowels in the same word
 (duration stressed - mean(duration unstressed vowels))
 
 <img width="621" alt="Screenshot 2024-01-04 at 14 03 07" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/fee07987-38c8-473e-80ff-c49d6b1e9b2e">
+
+Distribution duration differences between stressed and  the duration of an unstressed vowel in the same word
+(duration stressed - duration unstressed vowel (same word))
+
+![Screenshot 2024-01-08 at 16 51 35](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/de3c3ff7-2e50-4688-8ec6-5c1d01af7d6b)
 
 
 ### top 20 syllable types with highest token counts
