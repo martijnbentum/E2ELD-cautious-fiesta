@@ -4,7 +4,7 @@ Spectral balance wordt berekend door de intensiteit van vier frequentie banden t
 500 - 1000
 1000 - 2000
 2000 - 4000
-Ze laten zien dat een lineaire discriminant analyse (LDA) goed onderscheid kan maken op basis van deze vier waardes, waarbij de tendens is dat klinkers met klemtoon meer intensiteit hebben in de lagere frequentie banden (0 - 500, 500-1000). Ze laten ook zien dat als je de frequentie banden aanpast aan de formanten, de LDA beter klemtoon kan voorspellen, maar dat heb ik voor nu buiten beschouwing gelaten.
+Ze laten zien dat een lineaire discriminant analyse (LDA) goed onderscheid kan maken op basis van deze vier waardes, waarbij de tendens is dat klinkers met klemtoon de intensiteit in hogere frequentiebanden minder snel afneemt. Ze laten ook zien dat als je de frequentie banden aanpast aan de formanten, de LDA beter klemtoon kan voorspellen, maar dat heb ik voor nu buiten beschouwing gelaten.
 
 Als je de vier intensiteit waardes voor de frequentie banden gebruikt om een LDA te trainen krijg je op ongeziene data de volgende performance op het voorspellen van klemtoon:
 
@@ -37,7 +37,7 @@ Matthews correlation coefficient: 0.577
 Het zou mooi zijn als je zou kunnen inschatten in hoeverre deze spectral balans de performance van de codevectors bepaald.
 De LD zou daar misschien bij kunnen helpen.
 
-Ik heb LD1 geplot (de y-as is random jitter zodat het verloop iets beter zichtbaar is). Ongeveer bij nul zie je het omslagpunt tussen klinker zonder of met klemtoon, waarbij < 0 geen klemtoon en > 0 wel klemtoon.
+Ik heb LD1 geplot (de y-as is random jitter zodat het verloop iets beter zichtbaar is, scatterplot). Ongeveer bij nul zie je het omslagpunt tussen klinker zonder of met klemtoon, waarbij < 0 geen klemtoon en > 0 wel klemtoon.
 Om in te schatten of spectral balance de performance van codevectors bepaald zou ik het volgende kunnen doen:
 Ik zou de klinkers kunnen nemen met klemtoon met een LD1 waarde van < -1 en de klinkers zonder klemtoon met een LD1 waarde van > 1
 De verwachting zou dan zijn dat de codevectors slechter zullen scoren dan voor de klinkers met klemtoon met een LD1 waarde > 1 en klinkers zonder klemtoon met een LD1 waarde < -1.
@@ -45,6 +45,12 @@ De verwachting zou dan zijn dat de codevectors slechter zullen scoren dan voor d
 Klinkt dat is een goede aanpak, of hebben jullie andere suggesties?
 
 In een vervolgstap kunnen we kijken of de transformer lagen wellicht beter presteren door dat ze de duur meenemen.
+
+LDA score counts voor beklemtoonde en onbeklemtoonde klinkers
+
+![Screenshot 2024-01-08 at 17 35 03](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/26dc1436-930b-44bb-9916-a5e018efd4b1)
+
+Scatterplot
 
 ![Screenshot 2024-01-03 at 10 33 20](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/bad95e41-6def-4bfb-a7fc-64b1860ed407)
 
