@@ -7,7 +7,7 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 import word
 
-def load_audio_file(file_path, sample_rate = 16000, start = 0.0, end = None):
+def load_audio_file(file_path, sample_rate = 44100, start = 0.0, end = None):
     '''load an audio file and return the signal and sample rate'''
     if end:
         duration = end - start
@@ -16,7 +16,7 @@ def load_audio_file(file_path, sample_rate = 16000, start = 0.0, end = None):
         duration=duration)
     return signal, sr
 
-def compute_fft(signal, sample_rate = 16000):
+def compute_fft(signal, sample_rate = 44100):
     '''compute the fast fourier transform of a signal
     returns only the positive frequencies
     frequencies         a list of frequencies corresponding to the fft_result
@@ -30,7 +30,7 @@ def compute_fft(signal, sample_rate = 16000):
     fft_result = fft_result[:int(len(fft_result)/2)]
     return frequencies, fft_result
 
-def compute_power_spectrum(signal, sample_rate = 16000):
+def compute_power_spectrum(signal, sample_rate = 44100):
     '''compute the power spectrum of a signal
     frequencies         a list of frequencies corresponding to the fft_result
     power_spectrum      a list of real numbers -> power of the signal at each
@@ -40,7 +40,7 @@ def compute_power_spectrum(signal, sample_rate = 16000):
     power_spectrum = np.abs(fft_result)**2 / len(signal)
     return frequencies, power_spectrum
 
-def plot_power_spectrum(signal, sample_rate = 16000):
+def plot_power_spectrum(signal, sample_rate = 44100):
     '''plot the power spectrum of a signal'''
     frequencies, power_spectrum = compute_power_spectrum(signal, sample_rate)
     plt.ion()
@@ -144,6 +144,92 @@ def make_dataset():
         X[index] = line[8:]
         y[index] = line[4]
     return X, y
+        
+
+def train_lda(X, y, test_size = 0.33, report = True):
+    '''train an LDA based on the vowel spectral balance datase 
+    use make_dataset function to create the dataset (X, y)
+    '''
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,y, test_size = test_size, random_state=42)
+    clf = LinearDiscriminantAnalysis()
+    clf.fit(X_train, y_train)
+    if report:
+        y_pred = clf.predict(X_test)
+        print(classification_report(y_test, y_pred))
+    data = {'X_train': X_train, 'X_test': X_test, 'y_train': y_train}
+    return clf, data
+        
+def plot_lda(X, y):
+    ''' fit an LDA based on data (X) and labels (y) and plot the results
+    '''
+    plt.ion()
+    plt.clf()
+    clf, _ = train_lda(X, y, report = False)
+    tf = clf.transform(X)
+    color = ['blue', 'red']
+    labels = ['no stress', 'stress']
+    for color, i, label in zip(color, [0,1], labels):
+        if i == 0: marker = 'o'
+        else: marker = 'x'
+        n = len(tf[y==i])
+        plt.scatter(tf[y==i], np.random.random(n), alpha=.05, color=color,
+            label=label, marker = marker)
+    legend = plt.legend()
+    for lh in legend.legendHandles:
+        lh.set_alpha(1)
+    plt.xlabel('Linear Discriminant 1')
+    plt.ylabel('Random jitter')
+    plt.show()
+
+def plot_lda_hist(X, y):
+    plt.ion()
+    plt.figure()
+    clf, _ = train_lda(X, y, report = False)
+    tf = clf.transform(X)
+    plt.hist(tf[y==0], bins = 50, alpha=0.7, color = 'blue', 
+        label = 'unstressed')
+    plt.hist(tf[y==1], bins = 50, alpha=0.7, color = 'red', 
+        label = 'stressed')
+    plt.grid(alpha=0.3)
+    plt.legend()
+    plt.xlabel('Linear Discriminant score')
+    plt.ylabel('Counts')
+    plt.show()
+
+def collect_fb_stressed_unstressed():
+    '''collect the fb values for stressed and unstressed vowels
+    '''
+    d = json.load(open('../MALD/mald_spectral_tilt.json'))[1:]
+    stressed = []
+    unstressed = []
+    for line in d:
+        if line[4]: stressed.append(line[8:])
+        else: unstressed.append(line[8:])
+    return np.array(stressed), np.array(unstressed)
+
+def plot_fb_stressed_unstressed(plot_mean = True):
+    stressed, unstressed = collect_fb_stressed_unstressed()
+    plt.ion()
+    plt.figure()
+    if plot_mean:
+        plt.plot(np.mean(unstressed, 0), color = 'blue')
+        plt.plot(np.mean(stressed, 0), color = 'red')
+    else:
+        [plt.plot(us, alpha=.0020, color='blue') for us in unstressed]
+        [plt.plot(s, alpha=.0020, color='red') for s in stressed]
+    plt.xticks([0,1,2,3],
+        labels=['0 - 500','500 - 1000','1000 - 2000','2000 - 4000'])
+    plt.ylabel('Intensity in dB')
+    plt.xlabel('Frequency band')
+    legend = plt.legend(['unstressed','stressed'])
+    for i,lh in enumerate(legend.legendHandles):
+        lh.set_alpha(1)
+        if i == 0: lh.set_color('blue')
+        if i == 1: lh.set_color('red')
+    plt.grid(alpha=.3)
+
+
 
 def add_lda_score_to_spectral_tilt_json():
     d = load_spectral_tilt_json()
@@ -196,89 +282,3 @@ def plot_lda_score_difference(multiple = False):
     plt.xlabel('LDA score difference')
     plt.ylabel('Counts')
     plt.show()
-
-   
-        
-def train_lda(X, y, test_size = 0.33, report = True):
-    '''train an LDA based on the vowel spectral balance datase 
-    use make_dataset function to create the dataset (X, y)
-    '''
-    X_train, X_test, y_train, y_test = train_test_split(
-        X,y, test_size = test_size, random_state=42)
-    clf = LinearDiscriminantAnalysis()
-    clf.fit(X_train, y_train)
-    if report:
-        y_pred = clf.predict(X_test)
-        print(classification_report(y_test, y_pred))
-    data = {'X_train': X_train, 'X_test': X_test, 'y_train': y_train}
-    return clf, data
-        
-def plot_lda(X, y):
-    ''' fit an LDA based on data (X) and labels (y) and plot the results
-    '''
-    plt.ion()
-    plt.clf()
-    clf, _ = train_lda(X, y, report = False)
-    tf = clf.transform(X)
-    color = ['blue', 'red']
-    labels = ['no stress', 'stress']
-    for color, i, label in zip(color, [0,1], labels):
-        if i == 0: marker = 'o'
-        else: marker = 'x'
-        n = len(tf[y==i])
-        plt.scatter(tf[y==i], np.random.random(n), alpha=.05, color=color,
-            label=label, marker = marker)
-    legend = plt.legend()
-    for lh in legend.legendHandles:
-        lh.set_alpha(1)
-    plt.show()
-
-def plot_lda_hist(X, y):
-    plt.ion()
-    plt.figure()
-    clf, _ = train_lda(X, y, report = False)
-    tf = clf.transform(X)
-    plt.hist(tf[y==0], bins = 50, alpha=0.7, color = 'blue', 
-        label = 'unstressed')
-    plt.hist(tf[y==1], bins = 50, alpha=0.7, color = 'red', 
-        label = 'stressed')
-    plt.grid(alpha=0.3)
-    plt.legend()
-    plt.xlabel('Linear Discriminant score')
-    plt.ylabel('Counts')
-    plt.show()
-
-def collect_fb_stressed_unstressed():
-    '''collect the fb values for stressed and unstressed vowels
-    '''
-    d = json.load(open('../MALD/mald_spectral_tilt.json'))[1:]
-    stressed = []
-    unstressed = []
-    for line in d:
-        if line[4]: stressed.append(line[8:])
-        else: unstressed.append(line[8:])
-    return np.array(stressed), np.array(unstressed)
-
-def plot_fb_stressed_unstressed(plot_mean = True):
-    stressed, unstressed = collect_fb_stressed_unstressed()
-    plt.ion()
-    plt.figure()
-    if plot_mean:
-        plt.plot(np.mean(unstressed, 0))
-        plt.plot(np.mean(stressed, 0))
-    else:
-        [plt.plot(us, alpha=.0020, color='blue') for us in unstressed]
-        [plt.plot(s, alpha=.0020, color='red') for s in stressed]
-    plt.xticks([0,1,2,3],
-        labels=['0 - 500','500 - 1000','1000 - 2000','2000 - 4000'])
-    plt.ylabel('Intensity in dB')
-    plt.xlabel('Frequency band')
-    legend = plt.legend(['unstressed','stressed'])
-    for i,lh in enumerate(legend.legendHandles):
-        lh.set_alpha(1)
-        if i == 0: lh.set_color('blue')
-        if i == 1: lh.set_color('red')
-    plt.grid(alpha=.3)
-
-
-
