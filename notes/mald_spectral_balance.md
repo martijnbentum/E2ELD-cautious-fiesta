@@ -1,11 +1,11 @@
-The spectral balance was calculated based on the article Sluijter & van Heuven 1994, Spectral balance as an acoustic correlate of linguistic stress. It was calculated for all vowels in all words in the MALD dataset.  In total 67K vowels.
+Spectral balance was calculated based on the article Sluijter & van Heuven 1994 (Spectral balance as an acoustic correlate of linguistic stress). It was calculated for all vowels in all words in the MALD dataset.  In total 67K vowels.
 Spectral balance computes the intensity of four frequecy bands 
 0 - 500
 500 - 1000
 1000 - 2000
 2000 - 4000
-Sluijter & van Heuven (1994) show that linair discriminant analysis can classify stressed based on the intensity of these four bands. The intensity of lower frequency bands shows a slow drop off for stressed vowels.
-A further classification improvement can be obtained by changing the frequency bands based on the formants.
+Sluijter & van Heuven (1994) show that linair discriminant analysis can classify stress based on the intensity of these four frequency bands. The intensity of lower frequency bands shows a slower drop off for stressed vowels compared to unstressed vowels.
+A further classification improvement can be obtained by changing the frequency bands based on the formants. This was not attempted for the current analysis.
 
 LDA classification performance on unseen data based on the inensity values of the aforementioned frequecy bands:
 
@@ -20,7 +20,7 @@ LDA classification performance on unseen data based on the inensity values of th
 
 Matthews correlation coefficient: 0.631
 
-De LDA performs marginally better than codevectors (zie onder). De median duration of a vowel is 62 milliseconds, so this classifier sees twice the in put compared to a codevector (25 ms).
+De LDA performs marginally better than codevectors (zie onder). De median duration of a vowel is 62 milliseconds, so this classifier sees twice the audio input compared to a codevector (25 ms).
 
 MLP performance op basis van codevectors
 
@@ -34,18 +34,6 @@ MLP performance op basis van codevectors
 | weighted avg    |   0.80   |   0.78    |  0.78   | 239836|
 
 Matthews correlation coefficient: 0.577
-
-Het zou mooi zijn als je zou kunnen inschatten in hoeverre deze spectral balans de performance van de codevectors bepaald.
-De LD zou daar misschien bij kunnen helpen.
-
-Ik heb LD1 geplot (de y-as is random jitter zodat het verloop iets beter zichtbaar is, scatterplot). Ongeveer bij nul zie je het omslagpunt tussen klinker zonder of met klemtoon, waarbij < 0 geen klemtoon en > 0 wel klemtoon.
-Om in te schatten of spectral balance de performance van codevectors bepaald zou ik het volgende kunnen doen:
-Ik zou de klinkers kunnen nemen met klemtoon met een LD1 waarde van < -1 en de klinkers zonder klemtoon met een LD1 waarde van > 1
-De verwachting zou dan zijn dat de codevectors slechter zullen scoren dan voor de klinkers met klemtoon met een LD1 waarde > 1 en klinkers zonder klemtoon met een LD1 waarde < -1.
-
-Klinkt dat is een goede aanpak, of hebben jullie andere suggesties?
-
-In een vervolgstap kunnen we kijken of de transformer lagen wellicht beter presteren door dat ze de duur meenemen.
 
 LDA score counts for stressed and unstressed vowels
 <img width="827" alt="Screenshot 2024-01-09 at 17 31 46" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/d5f0a0b1-c2dc-4880-8bb7-beefeb7c0992">
@@ -74,4 +62,22 @@ Mean Intensity in dB for stressed and unstressed vowels for four frequency bands
 
 Intensity in dB for stressed and unstressed vowels for four frequency bands per vowel
 <img width="1540" alt="Screenshot 2024-01-09 at 17 30 34" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/b01f9111-f946-4541-9b03-b49d7b68c342">
+
+
+
+
+
+Het zou mooi zijn als je zou kunnen inschatten in hoeverre deze spectral balans de performance van de codevectors bepaald.
+De LD zou daar misschien bij kunnen helpen.
+
+Ik heb LD1 geplot (de y-as is random jitter zodat het verloop iets beter zichtbaar is, scatterplot). Ongeveer bij nul zie je het omslagpunt tussen klinker zonder of met klemtoon, waarbij < 0 geen klemtoon en > 0 wel klemtoon.
+Om in te schatten of spectral balance de performance van codevectors bepaald zou ik het volgende kunnen doen:
+Ik zou de klinkers kunnen nemen met klemtoon met een LD1 waarde van < -1 en de klinkers zonder klemtoon met een LD1 waarde van > 1
+De verwachting zou dan zijn dat de codevectors slechter zullen scoren dan voor de klinkers met klemtoon met een LD1 waarde > 1 en klinkers zonder klemtoon met een LD1 waarde < -1.
+
+Klinkt dat is een goede aanpak, of hebben jullie andere suggesties?
+
+In een vervolgstap kunnen we kijken of de transformer lagen wellicht beter presteren door dat ze de duur meenemen.
+
+
 
