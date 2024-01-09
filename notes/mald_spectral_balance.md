@@ -54,6 +54,16 @@ Scatterplot
 
 ![Screenshot 2024-01-03 at 10 33 20](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/bad95e41-6def-4bfb-a7fc-64b1860ed407)
 
+Counts of mean difference in ld1 score between stressed and unstressed vowels in the same word
+(ld1 score stressed vowel - mean(ld1 score unstressed vowels)) - same word
+<img width="823" alt="Screenshot 2024-01-09 at 15 09 40" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/ccb65f8c-2db6-4e04-a3fc-1ae98cd12647">
+
+Counts of difference in ld1 score between stressed and unstressed vowel in the same word
+(ld1 score stressed vowel - ld1 score unstressed vowel) - same word
+<img width="816" alt="Screenshot 2024-01-09 at 15 09 55" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/0f36573c-8700-4ec7-8548-e9edfc2f4a3f">
+
+
+I computed the intensity in four frequency bands. The plots below show the values in the different frequency bands
 
 Mean Intensity in dB for stressed and unstressed vowels for four frequency bands
 <img width="606" alt="Screenshot 2024-01-04 at 15 13 59" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/68354e46-0a4d-4382-8a64-d5c1c2b9017b">
