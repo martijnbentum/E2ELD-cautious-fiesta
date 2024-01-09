@@ -55,8 +55,9 @@ Scatterplot
 ![Screenshot 2024-01-03 at 10 33 20](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/bad95e41-6def-4bfb-a7fc-64b1860ed407)
 
 
-Intensity in dB for stressed and unstressed vowels for four frequency bands
+Mean Intensity in dB for stressed and unstressed vowels for four frequency bands
 <img width="606" alt="Screenshot 2024-01-04 at 15 13 59" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/68354e46-0a4d-4382-8a64-d5c1c2b9017b">
 
-
+Intensity in dB for stressed and unstressed vowels for four frequency bands per vowel
+<img width="1539" alt="Screenshot 2024-01-09 at 14 13 57" src="https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/60646cd2-2bbb-4d04-a08f-4bdcbfebdf03">
 
