@@ -201,17 +201,25 @@ def collect_fb_stressed_unstressed():
         else: unstressed.append(line[8:])
     return np.array(stressed), np.array(unstressed)
 
-def plot_fb_stressed_unstressed():
+def plot_fb_stressed_unstressed(plot_mean = True):
     stressed, unstressed = collect_fb_stressed_unstressed()
     plt.ion()
     plt.figure()
-    plt.plot(np.mean(stressed, 0))
-    plt.plot(np.mean(unstressed, 0))
+    if plot_mean:
+        plt.plot(np.mean(unstressed, 0))
+        plt.plot(np.mean(stressed, 0))
+    else:
+        [plt.plot(us, alpha=.0020, color='blue') for us in unstressed]
+        [plt.plot(s, alpha=.0020, color='red') for s in stressed]
     plt.xticks([0,1,2,3],
         labels=['0 - 500','500 - 1000','1000 - 2000','2000 - 4000'])
     plt.ylabel('Intensity in dB')
     plt.xlabel('Frequency band')
-    plt.legend(['stressed','unstressed'])
+    legend = plt.legend(['unstressed','stressed'])
+    for i,lh in enumerate(legend.legendHandles):
+        lh.set_alpha(1)
+        if i == 0: lh.set_color('blue')
+        if i == 1: lh.set_color('red')
     plt.grid(alpha=.3)
 
 
