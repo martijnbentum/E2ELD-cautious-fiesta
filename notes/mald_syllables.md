@@ -46,7 +46,11 @@ In total 25,426 words were syllabified (based on celex or prosodic)
 |stressed|239|202|121|3|785|
 |unstressed|195|180|102|30|616|
 
+Density plot of syllable duration (stressed vs unstressed)
+
 ![Screenshot 2023-10-02 at 10 47 39](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/bc433824-f35a-45f7-baf2-54fbef579a92)
+
+## Duration differences in stressed vs unstressed vowels
 
 Distribution duration differences between stressed and the mean duration of unstressed vowels in the same word. (median 0.010 | mean 0.012 | 56% of stressed vowels is longer than unstressed vowels)
 (duration stressed - mean(duration unstressed vowels))
@@ -58,6 +62,8 @@ Distribution duration differences between stressed and  the duration of an unstr
 (duration stressed - duration unstressed vowel (same word))
 
 ![Screenshot 2024-01-08 at 16 51 35](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/de3c3ff7-2e50-4688-8ec6-5c1d01af7d6b)
+
+## Duration differences in stressed vs unstressed syllables
 
 Distribution duration differences between stressed and the mean duration of unstressed syllables in the same word. (median 0.07 | mean 0.11 | 42% of stressed syllables is longer than unstressed syllables)
 (duration stressed - mean(duration unstressed syllables))
