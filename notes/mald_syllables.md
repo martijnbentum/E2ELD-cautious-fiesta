@@ -59,6 +59,15 @@ Distribution duration differences between stressed and  the duration of an unstr
 
 ![Screenshot 2024-01-08 at 16 51 35](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/de3c3ff7-2e50-4688-8ec6-5c1d01af7d6b)
 
+Distribution duration differences between stressed and the mean duration of unstressed syllables in the same word. (median 0.07 | mean 0.11 | 42% of stressed syllables is longer than unstressed syllables)
+(duration stressed - mean(duration unstressed syllables))
+
+![Screenshot 2024-01-15 at 15 25 29](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/9f064da8-14bf-4b6e-b519-32667473b7f8)
+
+Distribution duration differences between stressed and unstressed syllable in the same word. (median 0.08 | mean 0.11 | 48% of stressed syllables is longer than unstressed syllables)
+(duration stressed - mean(duration unstressed syllables))
+
+![Screenshot 2024-01-15 at 15 30 16](https://github.com/martijnbentum/E2ELD-cautious-fiesta/assets/19554953/6690f4e2-9702-46c6-99f0-27e63b554b80)
 
 ### top 20 syllable types with highest token counts
 |syllable|count|stressed|unstressed|word|word ipa|
