@@ -43,7 +43,8 @@ def syllable_to_vowel(syllable):
     for phoneme in syllable.phonemes:
         if phoneme.phoneme_type == 'vowel': return phoneme
    
-def word_stress_duration_difference(word, multiple = False):
+def word_stress_duration_difference(word, multiple = False, 
+    use_syllable=False):
     '''computes the difference in duration between stressed and unstressed
     vowels in a word
     difference = stressed vowel duration - mean(unstressed vowels duration)
@@ -54,12 +55,15 @@ def word_stress_duration_difference(word, multiple = False):
     no_stress_duration_total = []
     stressed_duration = 0
     for syllable in word.syllables:
-        vowel = syllable_to_vowel(syllable)
-        if not vowel: continue
-        if vowel.stressed:
-            stressed_duration = vowel.duration
+        if use_syllable:
+            unit = syllable
         else:
-            no_stress_duration_total.append( vowel.duration )
+            unit = syllable_to_vowel(syllable)
+        if not unit: continue
+        if unit.stressed:
+            stressed_duration = unit.duration
+        else:
+            no_stress_duration_total.append( unit.duration )
     no_stress_duration = np.mean(no_stress_duration_total)
     zero_duration = stressed_duration == 0 or no_stress_duration == 0
     diff = stressed_duration - no_stress_duration
@@ -80,7 +84,8 @@ def word_stress_duration_difference(word, multiple = False):
         return lines
     return line
 
-def mald_word_stress_duration_difference(w = None, multiple = False):
+def mald_word_stress_duration_difference(w = None, multiple = False, 
+    use_syllable = False):
     '''computes the difference in duration between stressed and unstressed
     vowels in a word for all words in the mald dataset
     '''
@@ -91,7 +96,8 @@ def mald_word_stress_duration_difference(w = None, multiple = False):
         if not word.is_word: continue
         if not hasattr(word, 'syllables'): continue
         if len(word.syllables) < 2: continue
-        o = word_stress_duration_difference(word, multiple = multiple)
+        o = word_stress_duration_difference(word, multiple = multiple, 
+            use_syllable = use_syllable)
         if multiple: 
             if o: output.extend(o)
             continue
@@ -100,10 +106,12 @@ def mald_word_stress_duration_difference(w = None, multiple = False):
         output.append(o)
     return output
 
-def plot_distribution_of_stress_duration_differences(w = None, multiple = False):
+def plot_distribution_of_stress_duration_differences(w = None, multiple = False,
+    use_syllable = False):
     '''plot the distribution of stress duration differences
     '''
-    data = mald_word_stress_duration_difference(w, multiple = multiple)
+    data = mald_word_stress_duration_difference(w, multiple = multiple,
+        use_syllable = use_syllable)
     differences = [x['difference'] for x in data]
     plt.ion()
     plt.figure()
