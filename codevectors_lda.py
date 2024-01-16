@@ -3,6 +3,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 import numpy as np
+from progressbar import progressbar
 import word
 
 def get_frames(w = None):
@@ -11,11 +12,12 @@ def get_frames(w = None):
 
 def count_ok_frames(frames):
     indices = []
+    codevector_size = frames[0].codevector.shape[0]
     for index, frame in enumerate(frames):
-        if not hasattr(frame, 'phoneme') 
+        if not hasattr(frame, 'phoneme'): continue 
         if not frame.phoneme: continue
-        if not hasattr(frame.codevector): continue
-        if not hasattr(frame.codevector.shape): continue
+        if not hasattr(frame,'codevector'): continue
+        if not hasattr(frame.codevector,'shape'): continue
         if not frame.codevector.shape[0] == codevector_size: continue
         indices.append(index)
     return indices
@@ -25,12 +27,11 @@ def make_dataset(frames = None, w = None, save = False):
     for LDA training.
     '''
     if not frames: frames = get_frames(w = w).frames
-    frame = frames[0]
-    codevector_size = frame.codevector.shape[0]
+    codevector_size = frames[0].codevector.shape[0]
     indices = count_ok_frames(frames)
     X = np.zeros((len(indices), codevector_size))
     y = np.zeros((len(indices), 1))
-    for index in indices:
+    for index in progressbar(indices):
         frame = frames[index]
         X[index] = frame.codevector
         y[index] = int(frame.phoneme.stressed)
