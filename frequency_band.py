@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import classification_report
+from sklearn.metrics import matthews_corrcoef
 from sklearn.model_selection import train_test_split
 import word
 
