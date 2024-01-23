@@ -10,13 +10,19 @@ import json
 import locations
 from matplotlib import pyplot as plt
 import numpy as np
+import os
 import phoneme_mapper
 import pickle
 import sox
 import word
 
-fn = glob.glob(locations.mald_codevector_indices + '*.npy')
-fn = [f for f in fn if 'codebook' not in f]
+
+if os.path.isfile(locations.fn_mald_codevector_indices):
+    with open(locations.fn_mald_codevector_indices) as f:
+        fn = f.read().split('\n')
+else:
+    fn = glob.glob(locations.mald_codevector_indices + '*.npy')
+    fn = [f for f in fn if 'codebook' not in f]
 
 
 def load_codebook_indices(filename):
@@ -97,6 +103,7 @@ class Frame:
         return m
 
     def __eq__(self, other):
+        #check if codevector is identical
         if type(self) != type(other):return False
         return self.i1== other.i1 and self.i2 == other.i2
 
