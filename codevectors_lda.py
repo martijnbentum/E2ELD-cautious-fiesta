@@ -106,9 +106,9 @@ def train_lda(X, y, test_size = 0.33, report = True, save = True,
             pickle.dump(clf, f)
     return clf, data
 
-def load_lda(on_vowels = False):
+def load_lda(only_vowels = False):
     '''load LDA from disk'''
-    if on_vowels:
+    if only_vowels:
         with open('../MALD/lda_vowels.pickle', 'rb') as f:
             return pickle.load(f)
     with open('../MALD/lda.pickle', 'rb') as f:
@@ -150,3 +150,6 @@ def plot_lda_hist(X, y, clf = None):
     plt.xlabel('Linear Discriminant score')
     plt.ylabel('Counts')
     plt.show()
+
+
+
