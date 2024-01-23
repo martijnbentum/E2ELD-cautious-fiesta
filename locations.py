@@ -27,6 +27,7 @@ mald_prosodic_syllables_directory = mald + 'prosodic_syllables/'
 mald_audio_infos = mald + 'audio_infos/'
 
 mald_codevector_indices = mald + 'codevector_indices/'  
+fn_mald_codevector_indices = mald + 'cv_filenames.txt'
 codebook_filename = mald_codevector_indices + 'codebook.npy'
 mald_codevector_phoneme_count = mald + 'codevector_phoneme_count/'
 mald_codevector_phoneme_count_stress_info = mald + 'codevector_phoneme_count'
