@@ -42,7 +42,7 @@ def handle_line(line):
 
 def format_list():
     output, error = [], []
-    l = open(directory + 'list1.txt', 'r').read().split('\n')
+    l = open(directory + 'list2a.txt', 'r').read().split('\n')
     l = [x.split('\t') for x in l if x]
     for x in l:
         if not x: continue
