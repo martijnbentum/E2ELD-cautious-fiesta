@@ -5,6 +5,7 @@ import json
 from matplotlib import pyplot as plt
 import numpy as np
 from progressbar import progressbar
+from scipy import stats
 from sklearn.linear_model import LinearRegression
 import stress_spectral_diff
 
@@ -88,11 +89,35 @@ def load_phoneme_list():
     with open( '../MALD/phoneme_list.json') as filename:
         phoneme_list= json.load(filename)
     return phoneme_list
+
+def reduce_phoneme_list(phoneme_list = None):
+    if not phoneme_list: phoneme_list = load_phoneme_list()
+    d = {}
+    for line in phoneme_list:
+        key = line[0] + '-' + line[1]
+        if key not in d:
+            d[key] = [line]
+        else:
+            d[key].append(line)
+    reduced_phone_list = []
+    for k, lines in d.items():
+        n = len(lines)
+        index = round(n/2)
+        if n == 1:reduced_phone_list.append(lines[0])
+        else: reduced_phone_list.append(lines[index])
+    return reduced_phone_list, d
         
-def lm():
-    pl = load_phoneme_list()
+def lm(use_reduced = True, do_zscore = False):
+    if use_reduced: pl, _ = reduce_phoneme_list()
+    else: pl = load_phoneme_list()
     iv_spectral_tilt = np.array([x[4] for x in pl]).reshape(len(pl),1)
     dv_codevector = np.array([x[-1] for x in pl])
+    if do_zscore:
+        iv_spectral_tilt = stats.zscore(iv_spectral_tilt)
+        dv_codevector = stats.zscore(dv_codevector)
+        indices = np.where(np.abs(iv_spectral_tilt) < 3)[0]
+        iv_spectral_tilt = iv_spectral_tilt[indices]
+        dv_codevector = dv_codevector[indices]
     x_values = np.array([np.min(iv_spectral_tilt), np.max(iv_spectral_tilt)])
     print(x_values)
     lm = LinearRegression()
