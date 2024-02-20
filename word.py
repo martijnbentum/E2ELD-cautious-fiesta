@@ -470,4 +470,37 @@ def make_baldey_syllables_with_celex(word):
         stress = x=word.celex_word.stress_list[syllable_index]
         syllable = Syllable(phonemes,stress, syllable_index, word, 'celex')
         word.syllables.append(syllable)
+
+def make_phoneme_example_dict(words = None, phonemes = None):
+    if not words: words = Words().words
+    if not phonemes: 
+        phonemes = phoneme_mapper.ipa_mald_vowels 
+        phonemes += phoneme_mapper.ipa_mald_consonants
+    output= {}
+    for phoneme in phonemes:
+        for word in words:
+            if phoneme in word.ipa:
+                if phoneme not in output.keys():
+                    output[phoneme] = {'stressed':{'index':[],'word':[]},
+                        'unstressed':{'index':[],'word':[]}}
+                for p in word.table.phonemes:
+                    if p.ipa == phoneme:
+                        index = p.phoneme_index
+                        if p.stressed: k = 'stressed'
+                        else: k = 'unstressed'
+                        output[phoneme][k]['index'].append(index)
+                        output[phoneme][k]['word'].append(word)
+    return output
+
+def make_phoneme_count_dict(words = None,example_dict = None, phonemes = None):
+    if not example_dict:
+        example_dict = make_phoneme_example_dict(words, phonemes)
+    phonemes = list(example_dict.keys())
+    output = {}
+    for phoneme in phonemes:
+        output[phoneme] = len(example_dict[phoneme]['unstressed']['word'])
+        output[phoneme+'_stressed'] = len(example_dict[phoneme]['stressed']['word'])
+    return output
+
+    
     
