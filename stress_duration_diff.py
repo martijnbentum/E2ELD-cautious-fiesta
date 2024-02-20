@@ -8,7 +8,7 @@ def get_syllables(w = None):
     get all syllables from the mald dataset words
     '''
     if w is None: w = word.Word()
-    syllables = ds.collect_syllables_ld(w, lang='english')
+    syllables = ds.collect_syllables_ld(w, language='english')
     return syllables
 
 def get_durations_from_syllables(syllables = None, w = None):
@@ -20,6 +20,18 @@ def get_durations_from_syllables(syllables = None, w = None):
     for syllable in syllables:
         if syllable.stressed: durations['stress'].append(syllable.duration)
         else: durations['no stress'].append(syllable.duration)
+    return durations
+
+def get_durations_from_vowels(syllables = None, w = None):
+    if not syllables: syllables = get_syllables(w)
+    durations = {'stress':[], 'no stress':[]} 
+    for syllable in syllables:
+        try: syllable.vowel
+        except: continue
+        if syllable.stressed: 
+            durations['stress'].append(syllable.vowel.duration)
+        else: 
+            durations['no stress'].append(syllable.vowel.duration)
     return durations
 
 def get_syllables_from_multi_syllable_words(syllables = None, w = None):
@@ -119,3 +131,23 @@ def plot_distribution_of_stress_duration_differences(w = None, multiple = False,
     plt.grid(alpha=0.3)
     plt.xlabel('Duration in seconds')
     plt.ylabel('Counts')
+
+def plot_stress_no_stress_distributions(w = None, use_syllable = False):
+    if use_syllable:
+        durations = get_durations_from_syllables(w = w)
+    else:
+        durations = get_durations_from_vowels(w = w)
+    plt.ion()
+    plt.figure()
+    plt.hist(durations['stress'], bins=50, color = 'black', alpha=1, 
+        label='stress')
+    plt.hist(durations['no stress'], bins=50, color = 'orange', alpha=.7,
+        label='no stress')
+    plt.legend()
+    plt.xlabel('Duration in seconds')
+    plt.ylabel('Counts')
+    plt.grid(alpha=0.3)
+
+    
+
+
