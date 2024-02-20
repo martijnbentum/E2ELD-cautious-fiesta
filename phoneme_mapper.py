@@ -1,5 +1,10 @@
 import utils
 
+ipa_mald_vowels = 'eɪ,ɔɪ,aʊ,ai,ɪ,ɛ,æ,ɑ,ʌ,ɔ,ʊ,u,oʊ,i,ɝ'.split(',')
+ipa_mald_consonants = 'p,b,t,d,k,g,ŋ,m,n,l,f,v,θ,ð,s,z,ʃ,ʒ,j,h,w,tʃ,dʒ,ɹ'
+ipa_mald_consonants = ipa_mald_consonants.split(',')
+silence = 'silence'
+
 class Mapper:
     '''map phonemes from one set to another set.'''
     def __init__(self, language = 'english'):
