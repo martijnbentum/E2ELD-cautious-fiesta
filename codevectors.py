@@ -181,6 +181,7 @@ def frames_to_phoneme_counter(frames, add_stress_info = False,
         raise ValueError('cannot add stress and time info')
     d = {}
     for frame in frames:
+        if not frame.phoneme: continue
         ipa = frame.phoneme.ipa
         if add_stress_info and ipa != 'silence':
             if frame.phoneme.stressed: ipa += '_stressed'
@@ -333,13 +334,24 @@ def codevector_json_filename_to_name(filename):
     name = filename.split('/')[-1].split('.')[0]
     return name
     
-    
-
-def create_matrix_phoneme_counts(p, d):
+def _get_vowel_indices(phonemes, stress_marker = '_stressed', vowels = None):
+    if not vowels:
+        vowels = phoneme_mapper.ipa_mald_vowels
+    vowels_stressed = [x + stress_marker for x in vowels]
+    indices = []
+    for index, phoneme in enumerate(phonemes):
+        if phoneme in vowels: indices.append(index)
+        elif phoneme in vowels_stressed: indices.append(index)
+    return indices
+        
+def create_matrix_phoneme_counts(p, d, only_vowels = False):
     '''create a matrix that with a phoneme per row and codevectors
     per column. The matrix values are the counts of the phoneme each 
     codevector column.
     '''
+    if only_vowels:
+        vowel_indices = _get_vowel_indices(p)
+        p = [p[i] for i in vowel_indices]
     rows, columns = len(p), len(d)
     m = np.zeros((rows, columns))
     for i, phoneme in enumerate(p):
@@ -349,6 +361,12 @@ def create_matrix_phoneme_counts(p, d):
                 m[i,j] = 0
                 continue
             m[i,j] = cpc[phoneme]
+    print(m.shape)
+    if only_vowels:
+        # bad_indices = np.where(np.isnan(np.sum(m, axis=0)))[0]
+        zero_indices = np.where(np.sum(m, axis=0) == 0)[0]
+        m = np.delete(m, zero_indices, axis=1)
+        print(m.shape, zero_indices.shape)
     return m
             
 
@@ -383,27 +401,32 @@ def compute_codevector_pdf(d):
         output_d[key] = np.sum(m[:,i]) / all_count
     return output_d
 
-def compute_phoneme_conditional_probability_matrix(d):
+def compute_phoneme_conditional_probability_matrix(d, only_vowels = False):
     '''compute the conditional probability matrix for P(phoneme | codevector).
     '''
     p = _get_all_phonemes(d)
-    m = create_matrix_phoneme_counts(p, d)
+    m = create_matrix_phoneme_counts(p, d, only_vowels)
     m = m / np.sum(m, axis=0)
     return m
 
-def compute_codevector_conditional_probability_matrix(d):
+def compute_codevector_conditional_probability_matrix(d, only_vowels = False):
     '''compute the conditional probability matrix for P(codevector | phoneme).
     '''
     p = _get_all_phonemes(d)
-    m = create_matrix_phoneme_counts(p, d)
+    m = create_matrix_phoneme_counts(p, d, only_vowels)
     m = m.transpose() / np.sum(m, axis=1)
     return m.transpose()
 
-def plot_phoneme_conditional_probability_matrix(d):
+def plot_phoneme_conditional_probability_matrix(d = None, 
+    only_vowels = False):
     '''plot the conditional probability matrix for P(phoneme | codevector).
     '''
+    if not d: d = load_all_count_dicts()
     p = _get_all_phonemes(d)
-    m = compute_phoneme_conditional_probability_matrix(d)
+    if only_vowels: 
+        vowel_indices = _get_vowel_indices(p)
+        p = [p[i] for i in vowel_indices]
+    m = compute_phoneme_conditional_probability_matrix(d, only_vowels)
     row_index_max_value = np.argmax(m, axis=0)
     column_indices = np.argsort(row_index_max_value)
     m = m[:,column_indices]
@@ -413,9 +436,10 @@ def plot_phoneme_conditional_probability_matrix(d):
     plt.show()
     return m
         
-def plot_codevector_conditional_probability_matrix(d):
+def plot_codevector_conditional_probability_matrix(d = None):
     '''plot the conditional probability matrix for P(codevector | phoneme).
     '''
+    if not d: d = load_all_count_dicts()
     p = _get_all_phonemes(d)
     m = compute_codevector_conditional_probability_matrix(d)
     row_index_max_value = np.argmax(m, axis=0)
@@ -427,11 +451,12 @@ def plot_codevector_conditional_probability_matrix(d):
     plt.show()
     return m
 
-def compute_phoneme_confusion_matrix(d):
+def compute_phoneme_confusion_matrix(d = None, only_vowels = False):
     '''compute the confusion probability matrix for P(phoneme | phoneme).
     '''
-    m = compute_phoneme_conditional_probability_matrix(d)
-    mm = compute_codevector_conditional_probability_matrix(d)
+    if not d: d = load_all_count_dicts()
+    m = compute_phoneme_conditional_probability_matrix(d, only_vowels)
+    mm = compute_codevector_conditional_probability_matrix(d, only_vowels)
     confusion_matrix = np.matmul(m,mm.transpose())
     return confusion_matrix
 
@@ -445,17 +470,23 @@ def _sampa_to_ipa(p):
         else: ipa_p.append(ipa_d[x])
     return ipa_p
     
-def plot_phoneme_confusion_matrix(d):
+def plot_phoneme_confusion_matrix(d = None, only_vowels = False):
     '''plot the confusion probability matrix for P(phoneme | phoneme).
     '''
+    if not d: d = load_all_count_dicts()
     p = _get_all_phonemes(d)
-    m = compute_phoneme_confusion_matrix(d)
+    if only_vowels:
+        vowel_indices = _get_vowel_indices(p)
+        p = [p[i] for i in vowel_indices]
+    m = compute_phoneme_confusion_matrix(d, only_vowels)
     fig, ax = plt.subplots(figsize=(10,10))
     ax.matshow(m, cmap = 'binary')
     ax.xaxis.set_ticks(range(len(p)),p)
     ax.yaxis.set_ticks(range(len(p)),p)
+    plt.xticks(rotation=90)
     plt.show()
-    
+    return m
+   
 
 def _get_all_mald_phonemes(word):
     '''get all phonemes for a word.
