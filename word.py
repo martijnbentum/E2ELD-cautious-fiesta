@@ -1,6 +1,7 @@
 import align_phonemes
 import celex
 import json
+import frequency_band
 import locations
 import make_syllabels_with_prosodic as mswp
 import metadata
@@ -154,6 +155,8 @@ class Word:
         self.audio_info_filename = locations.mald_audio_infos
         self.audio_info_filename += self.word.upper() + '.json'
         self._audio_info = json.load(open(self.audio_info_filename))
+        self._audio_info['sample_rate'] = int(self._audio_info['sample_rate'])
+        self._audio_info['nchannels'] = int(self._audio_info['nchannels'])
         return self._audio_info
 
     @property
@@ -170,6 +173,14 @@ class Word:
         for phoneme in phonemes:
             self._ipa.append( to_ipa[phoneme] )
         return ' '.join(self._ipa)
+
+    @property
+    def signal(self):
+        if hasattr(self,'_signal'): return self._signal
+        sample_rate = self.audio_info['sample_rate']
+        self._signal, _ = frequency_band.load_audio_file(self.audio_filename,
+            sample_rate)
+        return self._signal
             
 class Table:
     def __init__(self, filename, word = None):
@@ -287,6 +298,15 @@ class Syllable:
             vowel = v
         else: vowel = vowel[0]
         return vowel
+
+    @property
+    def signal(self):
+        if hasattr(self,'_signal'): return self._signal
+        sample_rate = self.word.audio_info['sample_rate']
+        start,end = make_start_end_index(self.start_time,self.end_time, 
+            sample_rate)
+        self._signal = self.word.signal[start:end]
+        return self._signal
             
 
 class Phoneme:
@@ -347,6 +367,15 @@ class Phoneme:
         if self.ipa in align_phonemes.vowels: return 'vowel'
         if self.ipa in align_phonemes.consonants: return 'consonant'
         raise ValueError(self.ipa,'phoneme type not found')
+
+    @property
+    def signal(self):
+        if hasattr(self,'_signal'): return self._signal
+        sample_rate = self.table.word.audio_info['sample_rate']
+        start,end = make_start_end_index(self.start_time,self.end_time, 
+            sample_rate)
+        self._signal = self.table.word.signal[start:end]
+        return self._signal
 
         
         
@@ -504,3 +533,7 @@ def make_phoneme_count_dict(words = None,example_dict = None, phonemes = None):
 
     
     
+def make_start_end_index(start_time, end_time, sample_rate):
+    start = int(start_time * sample_rate)
+    end = int(end_time * sample_rate)
+    return start,end
