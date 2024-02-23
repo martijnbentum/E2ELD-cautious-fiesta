@@ -1,6 +1,7 @@
 import align_phonemes
 import celex
 import json
+import formants
 import frequency_band
 import locations
 import make_syllabels_with_prosodic as mswp
@@ -181,6 +182,12 @@ class Word:
         self._signal, _ = frequency_band.load_audio_file(self.audio_filename,
             sample_rate)
         return self._signal
+
+    @property
+    def formants(self):
+        if hasattr(self,'_formants'): return self._formants
+        self._formants = formants.Formants(self)
+        return self._formants
             
 class Table:
     def __init__(self, filename, word = None):
@@ -376,6 +383,20 @@ class Phoneme:
             sample_rate)
         self._signal = self.table.word.signal[start:end]
         return self._signal
+
+    @property
+    def f1_f2(self):
+        if hasattr(self,'_f1_f2'): return self._f1_f2
+        formants = self.table.word.formants
+        self._f1_f2 = formants.f1_f2(self)
+        return self._f1_f2
+
+    @property
+    def mean_f1_f2(self):
+        if hasattr(self,'_mean_f1_f2'): return self._mean_f1_f2
+        formants = self.table.word.formants
+        self._mean_f1_f2 = formants.mean_f1_f2(self)
+        return self._mean_f1_f2
 
         
         
