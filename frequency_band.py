@@ -8,6 +8,8 @@ from sklearn.metrics import matthews_corrcoef
 from sklearn.model_selection import train_test_split
 import word
 
+praat_baseline_power = 4*10**-10
+
 def load_audio_file(file_path, sample_rate = 44100, start = 0.0, end = None):
     '''load an audio file and return the signal and sample rate'''
     if end:
@@ -41,12 +43,13 @@ def compute_power_spectrum(signal, sample_rate = 44100):
     power_spectrum = np.abs(fft_result)**2 / len(signal)
     return frequencies, power_spectrum
 
-def plot_power_spectrum(signal, sample_rate = 44100):
+def plot_power_spectrum(signal, sample_rate = 44100, baseline_power = None):
     '''plot the power spectrum of a signal'''
+    if not baseline_power: baseline_power = praat_baseline_power
     frequencies, power_spectrum = compute_power_spectrum(signal, sample_rate)
     plt.ion()
     plt.clf()
-    plt.plot(frequencies, power_spectrum)
+    plt.plot(frequencies, 10*np.log10(power_spectrum/ baseline_power))
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Power')
     plt.grid(alpha=0.3)
