@@ -42,3 +42,5 @@ word_to_filenames_dict = '../word_to_filenames_dict.json'
 celex_directory = '../CELEX/'
 celex_english_phonology_file = celex_directory+ 'EPW.CD'
 celex_dutch_phonology_file = celex_directory + 'DPW.CD'
+
+mald_formant_dir = mald + 'formant_tables/'
