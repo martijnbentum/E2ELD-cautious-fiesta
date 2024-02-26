@@ -30,10 +30,9 @@ def handle_line(line):
     '''
     signal, sr = fb.load_audio_file(line['filename'], start=line['start'], 
         end=line['end'], sample_rate = 48_000)
-    frequencies, power_spectrum = fb.compute_power_spectrum(signal)
-    fb1 = fb.frequency_band_to_db(*line['f1'], frequencies, power_spectrum)
-    fb2 = fb.frequency_band_to_db(*line['f2'], frequencies, power_spectrum)
-    fb3 = fb.frequency_band_to_db(*line['f3'], frequencies, power_spectrum)
+    fb1 = fb.frequency_band_to_db(signal,*line['f1'])
+    fb2 = fb.frequency_band_to_db(signal,*line['f2'])
+    fb3 = fb.frequency_band_to_db(signal,*line['f3'])
     if sum([x < 0 for x in [fb1,fb2,fb3]]) > 0: return None
     line['fb1'] = fb1
     line['fb2'] = fb2
