@@ -49,6 +49,11 @@ def global_f1_f2(w = None, sd = None, gd = None):
         f2.append(np.mean(gd[vowel]['f2']))
     return f1, f2
             
+def global_mean_f1_f2(w = None, sd = None, gd = None):
+    if not gd: gd = vowel_global_f1_f2(w, sd)
+    f1 = np.mean([np.mean(gd[vowel]['f1']) for vowel in gd.keys()])
+    f2 = np.mean([np.mean(gd[vowel]['f2']) for vowel in gd.keys()])
+    return f1, f2
 
 def plot_formants(w = None, sd = None, gd = None):
     if not sd: sd = make_vowel_f1_f2_stress_dict(w)
@@ -56,12 +61,12 @@ def plot_formants(w = None, sd = None, gd = None):
     f1, f2 = global_f1_f2(w, sd, gd)
     plt.figure()
     plt.ion()
-    plt.xlim(2100, 1000)
+    plt.xlim(2100, 1050)
     plt.ylim(650, 350)
     plt.scatter(f2, f1,color = 'lightgrey', marker= '.', label = 'vowel mean')
     for vowel in gd.keys():
         plt.text(np.mean(gd[vowel]['f2'])+7.5, np.mean(gd[vowel]['f1'])-4, vowel,
-            color = 'lightgrey')
+            color = 'lightgrey', fontsize = 16)
         for stress in ['stressed', 'unstressed']:
             stress_label = 'stress' if stress == 'stressed' else 'no stress'
             if vowel == 'ɪ': label =stress_label
@@ -70,7 +75,7 @@ def plot_formants(w = None, sd = None, gd = None):
             sf1 = np.mean(sd[vowel][stress]['f1'])
             sf2 = np.mean(sd[vowel][stress]['f2'])
             plt.scatter(sf2, sf1, marker = '.',color = color, label = label) 
-            plt.text(sf2+7.5, sf1-4, vowel, color = color )
+            plt.text(sf2+7.5, sf1-4, vowel, color = color, fontsize = 16)
     plt.scatter(np.mean(f2), np.mean(f1), marker = 'x', color = 'red', 
         label = 'global mean')
     plt.grid(alpha = 0.3)
