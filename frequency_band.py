@@ -40,7 +40,9 @@ def compute_power_spectrum(signal, sample_rate = 44100):
                         frequency in frequencies
     '''
     frequencies, fft_result = compute_fft(signal, sample_rate)
-    power_spectrum = np.abs(fft_result)**2 
+    # the factor of 4 is to account for the fact that we only use the positive
+    # frequencies
+    power_spectrum = 10 * np.log10(4 * np.abs(fft_result)**2)
     return frequencies, power_spectrum
 
 def plot_power_spectrum(signal, sample_rate = 44100):
@@ -48,7 +50,7 @@ def plot_power_spectrum(signal, sample_rate = 44100):
     frequencies, power_spectrum = compute_power_spectrum(signal, sample_rate)
     plt.ion()
     plt.clf()
-    plt.plot(frequencies, 10*np.log10(4 * power_spectrum))
+    plt.plot(frequencies, power_spectrum)
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Power')
     plt.grid(alpha=0.3)
@@ -57,20 +59,20 @@ def plot_power_spectrum(signal, sample_rate = 44100):
 def frequency_band_to_db(signal,freq_lower_bound = None,freq_upper_bound = None, 
     baseline_power = None):
     '''compute the intensity in a frequency band and convert to decibels
-    '''
-    '''
-    fft = np.fft.fft(signal)
-    frequencies = np.fft.fftfreq(len(signal))
+    signal              the audio signal
+    freq_lower_bound    the lower bound of the frequency band
+    freq_upper_bound    the upper bound of the frequency band
+    baseline_power      the power of a comparison signal 
+                        using the praat_baseline_power as default
     '''
     if baseline_power == None: baseline_power = praat_baseline_power
     frequencies, fft = compute_fft(signal)
     if freq_lower_bound == None: lower_index = 0
     else:
         lower_index = np.where(frequencies >= freq_lower_bound)[0][0]
-    if freq_upper_bound == None: upper_index= len(signal)
+    if freq_upper_bound == None: upper_index= len(fft)
     else:
         upper_index = np.where(frequencies <= freq_upper_bound)[0][-1]
-    print(lower_index,upper_index)
     intensity = 2*np.sum(np.abs(fft[lower_index:upper_index]/len(signal))**2)
     return 10 * np.log10(intensity/ baseline_power) 
 
@@ -159,12 +161,12 @@ def make_dataset():
     return X, y
         
 
-def train_lda(X, y, test_size = 0.33, report = True):
+def train_lda(X, y, test_size = 0.33, report = True, random_state = 42):
     '''train an LDA based on the vowel spectral balance datase 
     use make_dataset function to create the dataset (X, y)
     '''
     X_train, X_test, y_train, y_test = train_test_split(
-        X,y, test_size = test_size, random_state=42)
+        X,y, test_size = test_size, random_state=random_state)
     clf = LinearDiscriminantAnalysis()
     clf.fit(X_train, y_train)
     if report:
