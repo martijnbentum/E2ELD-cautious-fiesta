@@ -40,42 +40,52 @@ def compute_power_spectrum(signal, sample_rate = 44100):
                         frequency in frequencies
     '''
     frequencies, fft_result = compute_fft(signal, sample_rate)
-    power_spectrum = np.abs(fft_result)**2 / len(signal)
+    power_spectrum = np.abs(fft_result)**2 
     return frequencies, power_spectrum
 
-def plot_power_spectrum(signal, sample_rate = 44100, baseline_power = None):
+def plot_power_spectrum(signal, sample_rate = 44100):
     '''plot the power spectrum of a signal'''
-    if not baseline_power: baseline_power = praat_baseline_power
     frequencies, power_spectrum = compute_power_spectrum(signal, sample_rate)
     plt.ion()
     plt.clf()
-    plt.plot(frequencies, 10*np.log10(power_spectrum/ baseline_power))
+    plt.plot(frequencies, 10*np.log10(4 * power_spectrum))
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Power')
     plt.grid(alpha=0.3)
     plt.show()
 
-def frequency_band_to_db(freq_lower_bound, freq_upper_band, frequencies, 
-    power_spectrum, baseline_power = 10**-6):
-    '''compute the power in a frequency band and convert to decibels
+def frequency_band_to_db(signal,freq_lower_bound = None,freq_upper_bound = None, 
+    baseline_power = None):
+    '''compute the intensity in a frequency band and convert to decibels
     '''
-    lower_index = np.where(frequencies >= freq_lower_bound)[0][0]
-    upper_index = np.where(frequencies <= freq_upper_band)[0][-1]
-    power = np.sum(power_spectrum[lower_index:upper_index])
-    return round(10 * np.log10(power / baseline_power), 2)
+    '''
+    fft = np.fft.fft(signal)
+    frequencies = np.fft.fftfreq(len(signal))
+    '''
+    if baseline_power == None: baseline_power = praat_baseline_power
+    frequencies, fft = compute_fft(signal)
+    if freq_lower_bound == None: lower_index = 0
+    else:
+        lower_index = np.where(frequencies >= freq_lower_bound)[0][0]
+    if freq_upper_bound == None: upper_index= len(signal)
+    else:
+        upper_index = np.where(frequencies <= freq_upper_bound)[0][-1]
+    print(lower_index,upper_index)
+    intensity = 2*np.sum(np.abs(fft[lower_index:upper_index]/len(signal))**2)
+    return 10 * np.log10(intensity/ baseline_power) 
 
-def get_four_fb_to_db(frequencies, power_spectrum):
+def get_four_fb_to_db(signal, baseline_power = None):
     '''compute the power in four frequency bands and convert to decibels
     the frequency bands are based on the article Sluijter & van Heuven (1994)
     to predict stress in vowels.
     '''
-    fb1 = frequency_band_to_db(0, 500, frequencies, power_spectrum)
-    fb2 = frequency_band_to_db(500, 1000, frequencies, power_spectrum)
-    fb3 = frequency_band_to_db(1000, 2000, frequencies, power_spectrum)
-    fb4 = frequency_band_to_db(2000, 4000, frequencies, power_spectrum)
+    fb1 = frequency_band_to_db(signal, 0, 500, None)
+    fb2 = frequency_band_to_db(signal,500, 1000, baseline_power)
+    fb3 = frequency_band_to_db(signal,1000, 2000, baseline_power)
+    fb4 = frequency_band_to_db(signal,2000, 4000, baseline_power)
     return fb1, fb2, fb3, fb4
 
-def handle_vowel(word, vowel):
+def handle_vowel(word, vowel, baseline_power = None):
     '''compute the power in four frequency bands and convert to decibels
     for a specific vowel in a word.
     word        word class object from word module
@@ -83,8 +93,7 @@ def handle_vowel(word, vowel):
     '''
     signal, sr = load_audio_file(word.audio_filename, start=vowel.start_time, 
         end=vowel.end_time)
-    frequencies, power_spectrum = compute_power_spectrum(signal)
-    output = get_four_fb_to_db(frequencies, power_spectrum)
+    output = get_four_fb_to_db(signal)
     if sum([x < 0 for x in output]) > 0: return None
     return output
 
