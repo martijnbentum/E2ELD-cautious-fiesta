@@ -1,4 +1,9 @@
+import json
 import unittest
+
+def dict_to_json(d, filename):
+    with open(filename, 'w') as f:
+        json.dump(d, f)
 
 def overlap(s1,e1,s2,e2, strict = False):
     if not strict:
