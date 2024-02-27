@@ -160,6 +160,11 @@ def make_dataset():
         y[index] = line[4]
     return X, y
         
+def compute_mcc_and_ci(n = 100):
+    mccs = {'spectral_balance': []}
+    for i in range(n):
+        X, y = make_dataset()
+        clf, data, report = train_lda(X, y, report = True, random_state = i)
 
 def train_lda(X, y, test_size = 0.33, report = True, random_state = 42):
     '''train an LDA based on the vowel spectral balance datase 
@@ -171,9 +176,11 @@ def train_lda(X, y, test_size = 0.33, report = True, random_state = 42):
     clf.fit(X_train, y_train)
     if report:
         y_pred = clf.predict(X_test)
-        print(classification_report(y_test, y_pred))
+        cr = classification_report(y_test, y_pred)
+        mcc = matthews_corrcoef(y_test, y_pred)
+        report = {'classification_report': cr, 'mcc': mcc}
     data = {'X_train': X_train, 'X_test': X_test, 'y_train': y_train}
-    return clf, data
+    return clf, data, report
         
 def plot_lda(X, y):
     ''' fit an LDA based on data (X) and labels (y) and plot the results
