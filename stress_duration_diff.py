@@ -132,20 +132,33 @@ def plot_distribution_of_stress_duration_differences(w = None, multiple = False,
     plt.xlabel('Duration in seconds')
     plt.ylabel('Counts')
 
-def plot_stress_no_stress_distributions(w = None, use_syllable = False):
-    if use_syllable:
-        durations = get_durations_from_syllables(w = w)
-    else:
-        durations = get_durations_from_vowels(w = w)
+def plot_stress_no_stress_distributions(durations = None, w = None, 
+    use_syllable = False,new_figure = True, minimal_frame = False, 
+    ylim = None, add_left = True, add_legend = True):
+    if not durations:
+        if use_syllable:
+            durations = get_durations_from_syllables(w = w)
+        else:
+            durations = get_durations_from_vowels(w = w)
     plt.ion()
-    plt.figure()
-    plt.hist(durations['stress'], bins=50, color = 'black', alpha=1, 
+    if new_figure: plt.figure()
+    ax = plt.gca()
+    if minimal_frame:
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+    if ylim: plt.ylim(ylim)
+    plt.xlim(0.02, 0.26)
+    plt.hist(durations['stress'], bins=30, color = 'black', alpha=1, 
         label='stress')
-    plt.hist(durations['no stress'], bins=50, color = 'orange', alpha=.7,
+    plt.hist(durations['no stress'], bins=30, color = 'orange', alpha=.7,
         label='no stress')
-    plt.legend()
-    plt.xlabel('Duration in seconds')
-    plt.ylabel('Counts')
+    if add_legend: plt.legend()
+    plt.xlabel('Duration (s)')
+    if add_left: plt.ylabel('Counts')
+    else:
+        ax.spines['left'].set_visible(False)
+        ax.tick_params(left = False)
+        ax.set_yticklabels([])
     plt.grid(alpha=0.3)
 
     

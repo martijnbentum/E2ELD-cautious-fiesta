@@ -85,19 +85,30 @@ def _find_stressed_unstressed(lines, one_word = False):
         stressed = stressed[0]
     return stressed, unstressed
 
-def plot_hist_all_vowels(d = None):
+def plot_hist_all_vowels(d = None, new_figure = True, ylim = None,
+        add_legend = True, add_left = True, minimal_frame = False):
     if not d: d = load_pitch_json()
     plt.ion()
-    plt.figure()
+    if new_figure: plt.figure()
+    ax = plt.gca()
+    if minimal_frame:
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
     stressed, unstressed = _find_stressed_unstressed(d[1:])
-    plt.hist(unstressed, bins = 50, alpha=0.7, color = 'blue', 
-        label = 'unstressed')
-    plt.hist(stressed, bins = 50, alpha=0.7, color = 'red', 
+    plt.ylim(ylim)
+    plt.xlim(50, 350)
+    plt.hist(stressed, bins = 50, alpha=0.7, color = 'black', 
         label = 'stressed')
+    plt.hist(unstressed, bins = 50, alpha=0.7, color = 'orange', 
+        label = 'unstressed')
     plt.grid(alpha=0.3)
     plt.legend()
     plt.xlabel('Pitch (Hz)')
-    plt.ylabel('Counts')
+    if add_left: plt.ylabel('Counts')
+    else:
+        ax.spines['left'].set_visible(False)
+        ax.tick_params(left = False)
+        ax.set_yticklabels([])
     plt.show()
 
 def compute_pitch_difference(d = None, multiple = False):
