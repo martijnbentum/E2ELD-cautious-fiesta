@@ -9,13 +9,13 @@ vowels = ['ɪ', 'ɛ', 'æ', 'ɑ', 'ʌ', 'ɔ', 'ʊ', 'u', 'i', 'ɝ']
 def select_mald_words(w = None):
     if w is None:
         import word
-        w = words.Word()
+        w = word.Words()
     words = [x for x in w.words if x.language == 'english' and x.is_word]
     words = [x for x in words if not x.syllable_error]
     return words
 
 def make_vowel_f1_f2_stress_dict(w = None, use_mean_per_vowel = True):
-    words = select_mald_words(w)
+    words = select_mald_words(w = w)
     d = {vowel:{'stressed':{'f1':[],'f2':[]}, 
             'unstressed':{'f1':[], 'f2': []}} for vowel in vowels}
     for word in progressbar(words):
@@ -42,7 +42,7 @@ def vowel_global_f1_f2(w = None, sd = None):
     return d
 
 def global_f1_f2(w = None, sd = None, gd = None):
-    if not gd: gd = vowel_global_f1_f2(w, sd)
+    if not gd: gd = vowel_global_f1_f2(w=w, sd=sd)
     f1, f2 = [], []
     for vowel in gd.keys():
         f1.append(np.mean(gd[vowel]['f1']))
@@ -50,10 +50,63 @@ def global_f1_f2(w = None, sd = None, gd = None):
     return f1, f2
             
 def global_mean_f1_f2(w = None, sd = None, gd = None):
-    if not gd: gd = vowel_global_f1_f2(w, sd)
+    if not gd: gd = vowel_global_f1_f2(w=w, sd=w)
     f1 = np.mean([np.mean(gd[vowel]['f1']) for vowel in gd.keys()])
     f2 = np.mean([np.mean(gd[vowel]['f2']) for vowel in gd.keys()])
     return f1, f2
+
+def make_stress_no_stress_dict(w = None, sd = None):
+    if not sd: sd = make_vowel_f1_f2_stress_dict(w=w)
+    stress = {}
+    for vowel, stress_dict in sd.items():
+        for stress_key, f1f2 in stress_dict.items():
+            if stress_key not in stress: stress[stress_key] = {'f1':[],'f2':[]} 
+            for fk, values in f1f2.items():
+                stress[stress_key][fk].extend(stress_dict[stress_key][fk])
+    return stress
+        
+
+def compute_distance_to_global_mean(w = None, sd = None, gd = None, 
+        stress = None):
+    if not stress:stress = make_stress_no_stress_dict(w=w, sd=sd)
+    global_f1, global_f2 = global_mean_f1_f2(w=w, sd=sd, gd=gd)
+    for stress_key, f1f2 in stress.items():
+        if not 'distance' in f1f2.keys():f1f2['distance'] = []
+        for f1, f2 in zip(f1f2['f1'], f1f2['f2']):
+            distance = np.sqrt((global_f1 - f1)**2 + (global_f2 - f2)**2)
+            f1f2['distance'].append(distance)
+    return stress
+            
+
+def plot_stress_no_stress(stress_distance = None, w = None, sd = None, 
+        gd = None, new_figure = True,add_legend = True, add_left = True,
+        minimal_frame = False, ylim = None):
+    if not stress_distance: 
+        stress_distance = compute_distance_to_global_mean(w=w, sd=sd, gd=gd)
+    if new_figure: plt.figure()
+    ax = plt.gca()
+    if minimal_frame:
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+    plt.ion()
+    plt.xlim(0,850)
+    if ylim: plt.ylim(ylim)
+    plt.hist(stress_distance['stressed']['distance'], color = 'black',bins = 50,
+        label = 'stress')
+    plt.hist(stress_distance['unstressed']['distance'], color = 'orange', 
+        bins = 50, alpha = 0.7, label = 'no stress')
+    plt.grid(alpha = 0.3)
+    plt.xlabel('Formants (Hz)')
+    if add_legend: plt.legend()
+    if add_left: plt.ylabel('Counts')
+    else:
+        ax.spines['left'].set_visible(False)
+        ax.tick_params(left = False)
+        ax.set_yticklabels([])
+        
+    plt.show()
+    
+        
 
 def plot_formants(w = None, sd = None, gd = None):
     if not sd: sd = make_vowel_f1_f2_stress_dict(w)
