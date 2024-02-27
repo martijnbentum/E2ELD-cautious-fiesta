@@ -102,7 +102,7 @@ def plot_hist_all_vowels(d = None, new_figure = True, ylim = None,
     plt.hist(unstressed, bins = 50, alpha=0.7, color = 'orange', 
         label = 'unstressed')
     plt.grid(alpha=0.3)
-    plt.legend()
+    if add_legend: plt.legend()
     plt.xlabel('Pitch (Hz)')
     if add_left: plt.ylabel('Counts')
     else:
