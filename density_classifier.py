@@ -10,7 +10,7 @@ features:
 '''
 
 import formants
-import json
+from general import dict_to_json
 import stress_intensity_diff as sid
 import stress_pitch_diff as spd
 import stress_duration_diff as sdd
@@ -23,9 +23,6 @@ from sklearn.metrics import classification_report, matthews_corrcoef
 from sklearn.model_selection import train_test_split
 import word
 
-def dict_to_json(d, filename):
-    with open(filename, 'w') as f:
-        json.dump(d, f)
 
 def compute_mccs_with_ci(n = 100, formant_data = None, intensities = None,
     pitch = None, durations = None, w = None):
@@ -49,7 +46,7 @@ def compute_mccs_with_ci(n = 100, formant_data = None, intensities = None,
             _ = clf.classification_report()
             mccs[key].append(clf.mcc)
         print(key, 'done',np.mean(mccs[key]), np.std(mccs[key]), mccs[key])
-    dict_to_json(mccs, 'mccs_acoustic_correlates.json')
+    dict_to_json(mccs, 'mccs_density_clf_acoustic_correlates.json')
     return mccs
 
             
@@ -72,7 +69,7 @@ def make_intensity_classifier(intensities = None, w = None, random_state=42):
         random_state=random_state)
     return clf
 
-def make_pitch_classifier(pitch = None, random_state=42):
+def make_pitch_classifier(pitch = None, w = None, random_state=42):
     if not pitch: pitch = spd.load_pitch_json()
     stress, no_stress = spd._find_stressed_unstressed(pitch[1:])
     clf = Classifier(stress, no_stress, name = 'pitch', 
@@ -94,6 +91,7 @@ class Classifier:
         self.no_stress=no_stress 
         self.name = name
         self.random_state = random_state
+        self.verbose = verbose
         self._train()
 
     def _train(self, test_size=0.33):
