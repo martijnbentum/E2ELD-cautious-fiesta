@@ -1,7 +1,9 @@
 import json
+from general import dict_to_json
 import librosa
 import matplotlib.pyplot as plt
 import numpy as np
+from progressbar import progressbar
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import classification_report
 from sklearn.metrics import matthews_corrcoef
@@ -162,9 +164,12 @@ def make_dataset():
         
 def compute_mcc_and_ci(n = 100):
     mccs = {'spectral_balance': []}
-    for i in range(n):
-        X, y = make_dataset()
+    X, y = make_dataset()
+    for i in progressbar(range(n)):
         clf, data, report = train_lda(X, y, report = True, random_state = i)
+        mccs['spectral_balance'].append(report['mcc'])
+    dict_to_json(mccs, 'mccs_density_lda_spectral_balance.json')
+    return mccs
 
 def train_lda(X, y, test_size = 0.33, report = True, random_state = 42):
     '''train an LDA based on the vowel spectral balance datase 
