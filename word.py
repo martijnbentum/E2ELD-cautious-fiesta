@@ -1,5 +1,6 @@
 import align_phonemes
 import celex
+import copy
 import json
 import formants
 import frequency_band
@@ -292,10 +293,13 @@ class Syllable:
         vowel = []
         for phoneme in self.phonemes:
             if phoneme.phoneme_type == 'vowel': vowel.append(phoneme)
+        if not vowel: return None
         if len(vowel) > 1:
             for i,phoneme in enumerate(vowel):
                 if i >= len(vowel) -1: break
-                assert phoneme.phoneme_index == vowel[i+1].phoneme_index - 1
+                if not phoneme.phoneme_index == vowel[i+1].phoneme_index - 1:
+                    #something is wrong do not return a vowel
+                    return None
             v = copy.copy(vowel[0])
             for phoneme in vowel[1:]:
                 v.phoneme += ' ' + phoneme.phoneme
