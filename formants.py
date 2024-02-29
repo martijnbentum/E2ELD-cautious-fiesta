@@ -1,10 +1,51 @@
+from general import dict_to_json
 import locations
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 from progressbar import progressbar
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.metrics import classification_report
+from sklearn.metrics import matthews_corrcoef
+from sklearn.model_selection import train_test_split
 
 vowels = ['ɪ', 'ɛ', 'æ', 'ɑ', 'ʌ', 'ɔ', 'ʊ', 'u', 'i', 'ɝ']
+
+
+def make_dataset(d = None, w = None, sd = None):
+    if not d: d = make_stress_no_stress_dict(w = w, sd = sd)
+    stress = np.array([d['stressed']['f1'], d['stressed']['f2']]).T
+    no_stress = np.array([d['unstressed']['f1'], d['unstressed']['f2']]).T
+    X = np.concatenate([stress, no_stress])
+    y = np.concatenate([np.ones(len(stress)), np.zeros(len(no_stress))])
+    return X, y
+
+def compute_mcc_and_ci(n = 100, dataset = None, d = None, w = None, 
+    sd = None):
+    mccs = {'f1f2': []}
+    if not dataset:dataset = make_dataset(d=d, w=w, sd=sd)
+    X, y = dataset
+    for i in progressbar(range(n)):
+        clf, data, report = train_lda(X, y, report = True, random_state = i)
+        mccs['f1f2'].append(report['mcc'])
+    dict_to_json(mccs, 'mccs_lda_f1f2.json')
+    return mccs
+
+def train_lda(X, y, test_size = 0.33, report = True, random_state = 42):
+    '''train an LDA based on the vowel F1 and F2 values 
+    use make_dataset function to create the dataset (X, y)
+    '''
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,y, test_size = test_size, random_state=random_state)
+    clf = LinearDiscriminantAnalysis()
+    clf.fit(X_train, y_train)
+    if report:
+        y_pred = clf.predict(X_test)
+        cr = classification_report(y_test, y_pred)
+        mcc = matthews_corrcoef(y_test, y_pred)
+        report = {'classification_report': cr, 'mcc': mcc}
+    data = {'X_train': X_train, 'X_test': X_test, 'y_train': y_train}
+    return clf, data, report
 
 def select_mald_words(w = None):
     if w is None:
