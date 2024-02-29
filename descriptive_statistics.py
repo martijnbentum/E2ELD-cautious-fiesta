@@ -45,7 +45,8 @@ def _stress_variability(syllable_dict, minimal_count, perc_delta,
     variable = {}
     for ipa, syllables in syllable_dict.items():
         if len(syllables) == 1: continue
-        stressed = len([x for x in syllables if x.stressed]) 
+        stressed = len([x for x in syllables if type(x) == word.Syllable 
+            and x.stressed]) 
         unstressed = len(syllables) - stressed
         if stressed == 0 or unstressed == 0: v = False
         else: v = True
@@ -99,7 +100,7 @@ def top_n_syllable_count_baldey(d = None, n = 20):
 # mald
     
 def mald_syllable_dict(syllables = None, w = None):
-    if not syllables: syllables = collect_syllables_ld(w, language = 'english')
+    if not syllables: syllables = collect_syllables_ld(w=w, language = 'english')
     return _syllable_dict(syllables)
 
 def hapax_mald_syllables(d = None):
