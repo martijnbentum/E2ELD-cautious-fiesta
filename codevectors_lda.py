@@ -10,9 +10,11 @@ import pickle
 from progressbar import progressbar
 import word
 
+
 def get_frames(w = None):
+    print(w,not w)
     if not w: w = word.get_frames()
-    return codevectors.Frames(w)
+    return codevectors.Frames(words = w)
 
 def check_frames_ok(frames = None, save = False):
     if not frames: frames = get_frames(w = w).frames
