@@ -44,3 +44,5 @@ celex_english_phonology_file = celex_directory+ 'EPW.CD'
 celex_dutch_phonology_file = celex_directory + 'DPW.CD'
 
 mald_formant_dir = mald + 'formant_tables/'
+
+leave_one_out_codevectors_lda = mald + 'leave_one_out_codevectors_lda/'
