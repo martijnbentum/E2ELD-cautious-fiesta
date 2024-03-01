@@ -64,7 +64,7 @@ def make_mald_variable_stress_syllable(sd = None, mald_syllable_dict = None,
 def make_mald_all_words_stress_syllable(w = None, save = False):
     mald_syllable_dict = ds.mald_syllable_dict(w = w)
     _,sd = ds.stress_variability_mald(mald_syllable_dict,1,1,n_include=None)
-    header, data, syls, no_vowel, error = make_mald_variable_stress_syllable(sd, 
+    header,data, syls, no_vowel, error = make_mald_variable_stress_syllable(sd, 
         save = False)
     dataset = [header] + data
     filename = '../mald_all_words_stress_syllable.tsv'
