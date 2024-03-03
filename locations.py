@@ -47,3 +47,6 @@ mald_formant_dir = mald + 'formant_tables/'
 
 leave_one_out_codevectors_lda = mald + 'leave_one_out_codevectors_lda/'
 leave_one_in_codevectors_lda = mald + 'leave_one_in_codevectors_lda/'
+
+leave_one_in_perceptron = mald + 'LEAVE_ONE_IN_PERCEPTRONS/'
+leave_one_out_perceptron = mald + 'LEAVE_ONE_OUT_PERCEPTRONS/'
