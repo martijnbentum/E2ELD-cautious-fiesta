@@ -161,18 +161,19 @@ def get_results(leave_one_in = False):
         results[vowel] = d
     return results
 
-def plot_results():
+def plot_results(new_figure = True, add_counts = True):
     rloi = get_results()
     rli = get_results(leave_one_in = True)
     mccout = [v['mcc'] for k,v in rloi.items()]
     mccin = [v['mcc'] for k,v in rli.items()]
     d = load_mald_vowel_specific_dataset_indices()
-    plt.figure()
+    if new_figure: plt.figure()
     plt.scatter(mccout, mccin, marker = '.', color = 'black')
     [plt.text(mccout[i]-0.003, mccin[i]+0.005, k, fontsize=12) for i,k in 
         enumerate(rloi.keys())]
-    [plt.text(mccout[i]-0.009, mccin[i]-0.012, str(len(d[k])),fontsize = 6,
-        color = 'grey') for i,k in enumerate(rloi.keys())]
+    if add_counts:
+        [plt.text(mccout[i]-0.009, mccin[i]-0.012, str(len(d[k])),fontsize = 6,
+            color = 'grey') for i,k in enumerate(rloi.keys())]
     plt.xlabel('MCC leave one out')
     plt.ylabel('MCC leave one in')
     plt.grid(alpha = 0.3)
