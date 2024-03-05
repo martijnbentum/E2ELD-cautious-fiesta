@@ -8,7 +8,6 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import classification_report
 from sklearn.metrics import matthews_corrcoef
 from sklearn.model_selection import train_test_split
-import word
 
 praat_baseline_power = 4*10**-10
 
@@ -58,8 +57,8 @@ def plot_power_spectrum(signal, sample_rate = 44100):
     plt.grid(alpha=0.3)
     plt.show()
 
-def frequency_band_to_db(signal,freq_lower_bound = None,freq_upper_bound = None, 
-    baseline_power = None):
+def frequency_band_to_db(signal,freq_lower_bound = None,
+    freq_upper_bound = None, baseline_power = None):
     '''compute the intensity in a frequency band and convert to decibels
     signal              the audio signal
     freq_lower_bound    the lower bound of the frequency band
@@ -83,7 +82,7 @@ def get_four_fb_to_db(signal, baseline_power = None):
     the frequency bands are based on the article Sluijter & van Heuven (1994)
     to predict stress in vowels.
     '''
-    fb1 = frequency_band_to_db(signal, 0, 500, None)
+    fb1 = frequency_band_to_db(signal, 0, 500, baseline_power)
     fb2 = frequency_band_to_db(signal,500, 1000, baseline_power)
     fb3 = frequency_band_to_db(signal,1000, 2000, baseline_power)
     fb4 = frequency_band_to_db(signal,2000, 4000, baseline_power)
@@ -129,7 +128,9 @@ def mald_header():
 def handle_mald_words(w = None, save = False):
     '''create a dataset of vowel spectral balance for the mald dataset
     '''
-    if not w: w = word.Words()
+    if not w: 
+        import word
+        w = word.Words()
     output = []
     for word in w.words:
         try: print(word)
