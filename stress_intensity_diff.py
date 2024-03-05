@@ -1,7 +1,6 @@
 import descriptive_statistics as ds
 from matplotlib import pyplot as plt
 import numpy as np
-import word
 
 def compute_praat_intensity(signal):
     '''
@@ -15,7 +14,9 @@ def get_syllables(w = None):
     '''
     get all syllables from the mald dataset words
     '''
-    if w is None: w = word.Word()
+    if w is None: 
+        import word
+        w = word.Word()
     syllables = ds.collect_syllables_ld(w, language='english')
     return syllables
 
