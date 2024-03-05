@@ -402,6 +402,39 @@ class Phoneme:
         self._mean_f1_f2 = formants.mean_f1_f2(self)
         return self._mean_f1_f2
 
+    @property
+    def intensity(self):
+        if hasattr(self,'_intensity'): return self._intensity
+        import stress_intensity_diff as sid
+        self._intensity = sid.compute_praat_intensity(self.signal)
+        return self._intensity
+
+    @property
+    def pitch(self):
+        if hasattr(self,'_pitch'): return self._pitch
+        import stress_pitch_diff
+        word = self.table.word
+        self._pitch = stress_pitch_diff.handle_vowel(word,self)
+        return self._pitch
+
+    @property
+    def spectral_balance(self):
+        if hasattr(self,'_spectral_balance'): return self._spectral_balance
+        import frequency_band
+        self._spectral_balance = frequency_band.get_four_fb_to_db(self.signal)
+        return self._spectral_balance
+
+    @property
+    def accoustic_correlates(self):
+        if hasattr(self,'_accoustic_correlates'): 
+            return self._accoustic_correlates
+        o = [self.intensity, self.duration, self.pitch]
+        o.extend( self.mean_f1_f2) 
+        o.extend(self.spectral_balance)
+        self._accoustic_correlates = o
+        return self._accoustic_correlates
+
+
         
         
 
