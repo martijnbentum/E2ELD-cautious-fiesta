@@ -1,6 +1,12 @@
 import json
 import unittest
 
+def compute_mean_sem_ci(data, ci_value=2.576):
+    mean = np.mean(data)
+    sem = np.std(data) / np.sqrt(len(data))
+    ci = ci_value * sem
+    return mean, sem, ci
+
 def dict_to_json(d, filename):
     with open(filename, 'w') as f:
         json.dump(d, f)
