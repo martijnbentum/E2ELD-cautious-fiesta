@@ -7,13 +7,14 @@ spectral_balance_filename = '../mccs_density_lda_spectral_balance.json'
 accoustic_correlates_filename='../mccs_density_clf_acoustic_correlates.json'
 f1f1_filename = '../mccs_lda_f1f2.json'
 combined_filename = '../mccs_combined_ac_lda_clf.json'
+codevector_filename = '../mccs_lda_codevectors.json'
 filenames = [spectral_balance_filename, accoustic_correlates_filename, 
-    f1f1_filename, combined_filename]
+    f1f1_filename, combined_filename, codevector_filename]
 
 
 rename = {'intensity': 'Intensity', 'duration': 'Duration', 
     'formant': 'Formants', 'pitch': 'Pitch', 'spectral_balance': 'Spectral',
-    'f1f2': 'F1-F2','combined': 'Combined'}
+    'f1f2': 'F1-F2','combined': 'Combined', 'codevector': 'Codevector'}
 
 
 def load_mccs(add_perceptron = False):
@@ -47,12 +48,12 @@ def plot_mccs(new_figure=True, add_perceptron = False):
     if new_figure:plt.figure()
     plt.ylim(0,1)
     results = load_mccs(add_perceptron = add_perceptron)
-    stats = compute_mccs_stats(results)
+    stats = general.compute_mccs_stats(results)
     x = range(len(results))
     means = [stats[key]['mean'] for key in stats]
     cis = [stats[key]['ci'] for key in stats]
     plt.errorbar(x, means, yerr=cis, fmt=',', markersize = 12, 
-        color = 'black',elinewidth = 2.5, capsize = 9, capthick = .6)
+        color = 'black',elinewidth = 2.5, capsize = 9, capthick = 2.5)
     plt.grid(alpha=0.3)
     plt.xticks(range(len(results)), results.keys(), rotation=45)
     plt.ylabel("matthew's correlation coefficient")
@@ -61,12 +62,6 @@ def plot_mccs(new_figure=True, add_perceptron = False):
 
 
 
-def compute_mccs_stats(results):
-    output ={}
-    for key, data in results.items():
-        mean, sem, ci= general.compute_mean_sem_ci(data)
-        output[key] = {'mean': mean, 'sem': sem, 'ci': ci}
-    return output
 
 
 
