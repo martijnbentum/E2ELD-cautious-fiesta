@@ -1,5 +1,14 @@
 import json
+import numpy as np
 import unittest
+
+
+def compute_mccs_stats(results):
+    output ={}
+    for key, data in results.items():
+        mean, sem, ci= compute_mean_sem_ci(data)
+        output[key] = {'mean': mean, 'sem': sem, 'ci': ci}
+    return output
 
 def compute_mean_sem_ci(data, ci_value=2.576):
     mean = np.mean(data)
