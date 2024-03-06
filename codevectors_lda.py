@@ -1,4 +1,5 @@
 import codevectors
+import general
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import classification_report
 from sklearn.metrics import matthews_corrcoef
@@ -86,19 +87,29 @@ def load_dataset(only_vowels = False):
     data = np.load('../MALD/codevectors.npz')
     return data['X'], data['y']
 
-def train_lda(X, y, test_size = 0.33, report = True, save = True,
-    only_vowels = False):
+def compute_mcc_and_ci(n = 100):
+    mccs = {'codevector': []}
+    X, y = load_dataset(only_vowels = True)
+    for i in progressbar(range(n)):
+        clf, data, report = train_lda(X, y, report = True, random_state = i,
+            save = False)
+        mccs['codevector'].append(report['mcc'])
+    general.dict_to_json(mccs, '../mccs_lda_codevectors.json')
+    return mccs
+
+def train_lda(X, y, test_size = 0.33, report = True, save = False,
+    only_vowels = False, random_state = 42):
     '''train an LDA based on the vowel spectral balance datase 
     use make_dataset function to create the dataset (X, y)
     '''
     X_train, X_test, y_train, y_test = train_test_split(
-        X,y, test_size = test_size, random_state=42)
+        X,y, test_size = test_size, random_state=random_state)
     clf = LinearDiscriminantAnalysis()
     clf.fit(X_train, y_train)
-    if report:
-        y_pred = clf.predict(X_test)
-        print(classification_report(y_test, y_pred))
-        print('MCC:', matthews_corrcoef(y_test, y_pred))
+    y_pred = clf.predict(X_test)
+    cr = classification_report(y_test, y_pred)
+    mcc = matthews_corrcoef(y_test, y_pred)
+    report = {'classification_report': cr, 'mcc': mcc}
     data = {'X_train': X_train, 'X_test': X_test, 'y_train': y_train,
         'y_test': y_test}
     if save:
@@ -106,7 +117,7 @@ def train_lda(X, y, test_size = 0.33, report = True, save = True,
         else: filename = '../MALD/lda.pickle'
         with open(filename, 'wb') as f:
             pickle.dump(clf, f)
-    return clf, data
+    return clf, data, report
 
 def load_lda(only_vowels = False):
     '''load LDA from disk'''
