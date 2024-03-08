@@ -417,11 +417,21 @@ def compute_codevector_conditional_probability_matrix(d, only_vowels = False):
     m = m.transpose() / np.sum(m, axis=1)
     return m.transpose()
 
+def _rename_stress_marker(p, new_marker = ' *',stress_marker = '_stressed'):
+    output = []
+    for x in p:
+        if stress_marker in x:
+            x = x.replace(stress_marker, new_marker)
+            output.append(x)
+        else: output.append(x)
+    return output
+
 def plot_phoneme_conditional_probability_matrix(d = None, 
-    only_vowels = False):
+    only_vowels = False, add_stress_info = False, add_time_info = False,
+    set_stress_marker = ' *'):
     '''plot the conditional probability matrix for P(phoneme | codevector).
     '''
-    if not d: d = load_all_count_dicts()
+    if not d: d = load_all_count_dicts(add_stress_info, add_time_info)
     p = _get_all_phonemes(d)
     if only_vowels: 
         vowel_indices = _get_vowel_indices(p)
@@ -431,8 +441,12 @@ def plot_phoneme_conditional_probability_matrix(d = None,
     column_indices = np.argsort(row_index_max_value)
     m = m[:,column_indices]
     fig, ax = plt.subplots(figsize=(10,10))
-    ax.matshow(m, aspect = 150, cmap = 'binary')
+    if add_stress_info: p = _rename_stress_marker(p, set_stress_marker)
+    cax = ax.matshow(m, aspect = 150, cmap = 'binary')
+    fig.colorbar(cax, fraction = .046, pad = .015)
     ax.yaxis.set_ticks(range(len(p)),p)
+    xticks, xlabels = plt.xticks()
+    plt.xticks(xticks[2:-2], xlabels[2:-2])
     plt.show()
     return m
         
