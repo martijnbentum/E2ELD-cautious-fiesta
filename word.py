@@ -8,7 +8,6 @@ import locations
 import make_syllabels_with_prosodic as mswp
 import metadata
 import os
-# import phonemes
 import phoneme_mapper as pm
 from progressbar import progressbar
 import time

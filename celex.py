@@ -1,5 +1,4 @@
 import locations
-# import phonemes
 import phoneme_mapper
 
 class Celex:
