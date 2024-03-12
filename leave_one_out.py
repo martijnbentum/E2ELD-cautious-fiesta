@@ -36,10 +36,10 @@ def plot_mccs(new_figure=True):
     means = [stats[key]['mean'] for key in stats]
     cis = [stats[key]['ci'] for key in stats]
     plt.errorbar(x, means, yerr=cis, fmt=',', markersize = 12, 
-        color = 'black',elinewidth = 2.5, capsize = 9, capthick = 2.5)
+        color = 'black',elinewidth = 2.5, capsize = 9, capthick = 1.5)
     plt.grid(alpha=0.3)
     plt.xticks(range(len(results)), results.keys(), rotation=0)
-    plt.ylabel("matthew's correlation coefficient")
+    plt.ylabel("matthews correlation coefficient")
     
 
 
