@@ -50,3 +50,11 @@ leave_one_in_codevectors_lda = mald + 'leave_one_in_codevectors_lda/'
 
 leave_one_in_perceptron = mald + 'LEAVE_ONE_IN_PERCEPTRONS/'
 leave_one_out_perceptron = mald + 'LEAVE_ONE_OUT_PERCEPTRONS/'
+
+coolest = '../COOLEST/'
+coolest_textgrids = baldey + 'textgrids/'
+fn_coolest_textgrids = glob.glob(coolest_textgrids + '*.TextGrid')
+prompts_filename = coolest + 'prompts.csv'
+coolest_audio = coolest + 'recordings/'
+coolest_word_recordings = mald_audio + 'words/'
+coolest_word_16khz_recordings = coolest_audio + 'words_16khz/'
