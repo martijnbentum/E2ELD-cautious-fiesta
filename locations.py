@@ -55,6 +55,5 @@ coolest = '../COOLEST/'
 coolest_textgrids = baldey + 'textgrids/'
 fn_coolest_textgrids = glob.glob(coolest_textgrids + '*.TextGrid')
 prompts_filename = coolest + 'prompts.csv'
-coolest_audio = coolest + 'recordings/'
-coolest_word_recordings = mald_audio + 'words/'
-coolest_word_16khz_recordings = coolest_audio + 'words_16khz/'
+coolest_audio = coolest + 'Recordings/'
+fn_coolest_audio = glob.glob(coolest_audio + '*/*.wav', recursive=True)
