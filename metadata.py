@@ -3,9 +3,11 @@ module to load the metadata for words
 datasets:
 baldey
 mald
+coolest
 '''
 import json
 import locations
+import coolest
 
 def get_mald_word_metadata(word, data = None):
     '''get the metadata for a word in the mald dataset
@@ -20,6 +22,9 @@ def get_baldey_word_metadata(word, data = None):
     for line in data:
         if line[9] == word: return line
     print('could not find',word,'in baldey metadata')
+
+def get_coolest_word_metadata(word, data = None):
+    pass
 
 
 # mald helper functions
@@ -79,6 +84,7 @@ def mald_word_data():
             output_line.append(item)
         output.append(output_line)
     return output
+
 
 # baldey helper functions
 
@@ -152,6 +158,24 @@ def baldey_datatype_dict_header():
             d[column_name] = datatype
     return d
 
+def coolest_word_data():
+    return coolest.load_word_data()
+
+def coolest_word_header():
+    return coolest.load_word_header()
+
+def coolest_datatype_dict_header():
+    s = 'name,number,word,stress_pattern,speech_condition,filename,prompt'
+    s = s.split(',')
+    i = 'repetition,nchannels,sample_rate,trial'.split(',')
+    f = ['duration']
+    b = ['word_status']
+    d = {}
+    for datatype,column_names in zip([str,int,float,bool],[s,i,f,b]):
+        for column_name in column_names:
+            d[column_name] = datatype
+    return d
+
 def baldey_word_set():
     with open(locations.baldey_wordset_filename) as fin:
         t = fin.read().split('\n')
@@ -162,26 +186,39 @@ def mald_word_set():
         t = fin.read().split('\n')
     return t
 
+def coolest_word_set():
+    with open(locations.coolest_wordset_filename) as fin:
+        t = fin.read().split('\n')
+    return t
+
 def filename_to_word(filename):
     word = filename.split('/')[-1].split('.')[0].lower()
     return word
 
 def word_to_filenames(word, dataset_name = 'baldey'):
+    function = filename_to_word
     if dataset_name == 'baldey':
         fn_audio = locations.fn_baldey_audio
         fn_textgrids = locations.fn_baldey_textgrids
-    else:
+    elif dataset_name == 'mald':
         fn_audio = locations.fn_mald_audio
         fn_textgrids = locations.fn_mald_textgrids
-    d = {'word':word}
+    else:
+        dataset_name = 'coolest'
+        fn_audio = locations.fn_coolest_audio
+        fn_textgrids = locations.fn_coolest_textgrids
+        function = coolest.filename_to_word
+    d = {'word':word, 'audio_filename':[], 'textgrid_filename':[]}
     for f in fn_audio:
-        if filename_to_word(f) == word:
-            d['audio_filename'] = f
-            break
+        if function(f) == word:
+            d['audio_filename'].append( f )
     for f in fn_textgrids:
-        if filename_to_word(f) == word:
-            d['textgrid_filename'] = f
-            break
+        if function(f) == word:
+            d['textgrid_filename'].append( f )
+    if type(d['audio_filename']) == list: 
+        d['audio_filename'] = sorted(d['audio_filename'])
+    if type(d['textgrid_filename']) == list:
+        d['textgrid_filename'] = sorted(d['textgrid_filename'])
     return d
 
 def word_to_info(word, dataset_name = 'baldey', data = None):
@@ -197,11 +234,13 @@ def word_to_info(word, dataset_name = 'baldey', data = None):
     return d
 
 def _make_word_to_filenames_dict():
-    d = {'baldey':{},'mald':{}}
+    d = {'baldey':{},'mald':{}, 'coolest':{}}
     for word in baldey_word_set():
         d['baldey'][word] = word_to_filenames(word, dataset_name = 'baldey')
     for word in mald_word_set():
         d['mald'][word] = word_to_filenames(word, dataset_name = 'mald')
+    for word in coolest.word_set():
+        d['coolest'][word] = word_to_filenames(word, dataset_name = 'coolest')
     with open(locations.word_to_filenames_dict,'w') as fout:
         json.dump(d,fout)
     
