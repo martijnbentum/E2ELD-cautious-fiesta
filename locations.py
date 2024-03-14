@@ -52,8 +52,14 @@ leave_one_in_perceptron = mald + 'LEAVE_ONE_IN_PERCEPTRONS/'
 leave_one_out_perceptron = mald + 'LEAVE_ONE_OUT_PERCEPTRONS/'
 
 coolest = '../COOLEST/'
-coolest_textgrids = baldey + 'textgrids/'
-fn_coolest_textgrids = glob.glob(coolest_textgrids + '*.TextGrid')
+coolest_textgrids = coolest+ 'textgrids/'
+fn_coolest_textgrids = glob.glob(coolest_textgrids + '*/*.TextGrid')
 prompts_filename = coolest + 'prompts.csv'
 coolest_audio = coolest + 'Recordings/'
-fn_coolest_audio = glob.glob(coolest_audio + '*/*.wav', recursive=True)
+fn_coolest_audio = glob.glob(coolest_audio + '*/*.wav')
+coolest_tables = coolest + 'tables/'
+fn_coolest_tables = glob.glob(coolest_tables + '*.csv')
+coolest_wordset_filename = coolest + 'word_set.txt'
+coolest_prompts_filename = coolest + 'prompts.csv'
+coolest_word_data_filename = coolest + 'coolest_word_data.tsv'
+coolest_word_header_filename = coolest + 'coolest_word_header.tsv'
