@@ -25,6 +25,7 @@ class Mapper:
         if self.language != 'dutch':
             self._fix_w()
         self._add_baldey()
+        self.__add_coolest()
 
     def _make_dicts(self):
         '''create dicts to map ipa, sampa, celex and disc phonemes
@@ -116,6 +117,7 @@ class Mapper:
         self.baldey_to_ipa['Y'] = 'ʉ'
         self.baldey_to_ipa['o'] = 'oː'
         self.baldey_to_ipa['2'] = 'øː'
+        self.baldey_to_ipa['w'] = 'ʋ'
         self.ipa_to_baldey= {}
         self.disc_to_baldey= {}
         self.baldey_to_disc = {}
@@ -124,6 +126,22 @@ class Mapper:
             self.baldey_to_ipa[baldey] = ipa
             self.disc_to_baldey[disc] = baldey
             self.baldey_to_disc[baldey] = disc
+
+    def __add_coolest(self):
+        self.coolest_to_ipa = {}
+        self.coolest_textgrid_phoneme_set = coolest_textgrid_phoneme_set
+        ps = self.coolest_textgrid_phoneme_set
+        for sampa, ipa in self.sampa_to_ipa.items():
+            if sampa in ps: self.coolest_to_ipa[sampa] = ipa
+        self.coolest_to_ipa['u'] = 'uː'
+        self.coolest_to_ipa['Y'] = 'uː'
+        self.coolest_to_ipa['y'] = 'yː'
+        self.coolest_to_ipa['i'] = 'iː'
+        self.coolest_to_ipa['Ei'] = 'ɛi'
+        self.coolest_to_ipa['9y'] = 'œy'
+        self.coolest_to_ipa['w'] = 'ʋ'
+
+
             
 
 def validate(mapper= None):
@@ -363,6 +381,10 @@ arpabet_to_examples = {
     'ZH': 'plea(s)ure'
 }
 
+ipa_to_dutch_examples = {}
+for ipa, example in zip(ipa_set,examples_dutch):
+    ipa_to_dutch_examples[ipa] = example
+
 
 baldey_textgrid_phoneme_set = 'n,Y,m,@,r,s,b,E,k,f,A,t,y,p,i,x,O'
 baldey_textgrid_phoneme_set +=',Y+,j,v,u,l,I,z,E+,G,w,d,h,o,e,g,a,N'
@@ -372,5 +394,12 @@ baldey_textgrid_phoneme_set = baldey_textgrid_phoneme_set.split(',')
 celex_dutch_phoneme_set = 'a,x,j,@,t,A,p,l,s,d,n,I,N,k,b,E,Z,K,m,e,v,r,L'
 celex_dutch_phoneme_set += ',G,f,O,w,u,z,i,},h,o,y,M,|,S,g,*,),!,<,_,('
 celex_dutch_phoneme_set = celex_dutch_phoneme_set.split(',')
+
+coolest_textgrid_phoneme_set = 'o:,u,b,g,Au,i,z,f,v,G,x,n,E,Ei,@,y,O,9y,A,e:'
+coolest_textgrid_phoneme_set += ',I,t,Y,l,k,a:,w,d,N,r,s,h,p,m'
+coolest_textgrid_phoneme_set = coolest_textgrid_phoneme_set.split(',')
+
+coolest_vowels = 'o:,u,Au,i,E,Ei,@,y,O,9y,A,e:,I,a:,Y'.split(',')
+coolest_consonants = 'b,g,z,f,v,G,x,n,t,l,k,w,d,N,r,s,h,p,m'.split(',')
 
     
