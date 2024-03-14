@@ -1,5 +1,6 @@
 import align_phonemes
 import celex
+import coolest
 import copy
 import json
 import formants
@@ -14,30 +15,50 @@ import time
 import utils
 
 class Words:
-    def __init__(self):
-        self.baldey_word_set = metadata.baldey_word_set()
-        self.mald_word_set = metadata.mald_word_set()
-        self.baldey_data = metadata.baldey_word_data()
-        self.mald_data = metadata.mald_word_data()
-        self.baldey_header = metadata.baldey_header()
-        self.mald_header = metadata.mald_word_header()
+    def __init__(self, load_datatsets = None, english_celex = None, 
+            dutch_celex = None,):
+        self._set_datasets(load_datatsets)
         self.word_to_filenames = metadata.word_to_filenames_dict()
-        self.english_celex = celex.Celex('english')
-        self.dutch_celex = celex.Celex('dutch')
+        if not english_celex:english_celex = celex.Celex('english')
+        if not dutch_celex: dutch_celex = celex.Celex('dutch')
+        self.english_celex = english_celex
+        self.dutch_celex = dutch_celex
         self.english_phoneme_mapper = pm.Mapper('english')
         self.dutch_phoneme_mapper = pm.Mapper('dutch')
         self._make_words()
 
+        
+    def _set_datasets(self, load_datatsets):
+        if not load_datatsets: load_datatsets = 'baldey,mald'.split(',')
+        if type(load_datatsets) == str: 
+            if ',' in load_datatsets:load_datatsets = load_datatsets.split(',')
+            else: load_datatsets = [load_datatsets]
+        self.dataset_names = load_datatsets
+
+        if 'baldey' in self.dataset_names:
+            self.baldey_word_set = metadata.baldey_word_set()
+            self.baldey_data = metadata.baldey_word_data()
+            self.baldey_header = metadata.baldey_header()
+        if 'mald' in self.dataset_names:
+            self.mald_word_set = metadata.mald_word_set()
+            self.mald_data = metadata.mald_word_data()
+            self.mald_header = metadata.mald_word_header()
+        if 'coolest' in self.dataset_names:
+            self.coolest_word_set = metadata.coolest_word_set()
+            self.coolest_data = metadata.coolest_word_data()
+            self.coolest_header = metadata.coolest_word_header()
 
     def _make_words(self):
         self.words = []
-        self.dataset_names = 'baldey,mald'.split(',')
         for name in self.dataset_names:
             if name == 'baldey': 
                 word_index = 9
                 language = 'dutch'
             elif name == 'mald': 
                 word_index = 0
+                language = 'english'
+            else:
+                word_index = 2
                 language = 'english'
             self._handle_data(name,word_index,language)
 
@@ -85,10 +106,26 @@ class Word:
         for md, column_name in zip(self.metadata, self.header):
             self.d[column_name] = md
         if self.dataset == 'baldey': self._set_baldey()
-        else: self._set_mald()
+        elif self.dataset == 'mald': self._set_mald()
+        elif self.dataset == 'coolest': self._set_coolest()
+        else: raise ValueError(self.dataset,'unknown dataset')
         self._set_table()
         if self.dataset == 'mald':self._make_mald_syllables()
         if self.dataset == 'baldey': self._make_baldey_syllables()
+
+    def _set_coolest(self):
+        self.is_word = True
+        self.n_syllables = 2
+        self.audio_filename = self.d['filename']
+        textgrid,table = coolest.get_textgrid_table_filename(self.d['filename'])
+        self.textgrid_filename = textgrid
+        self.table_filename = table
+        self.language = 'dutch'
+        self.phoneme_mapper = self.words.dutch_phoneme_mapper
+        self.phoneme_transcription = ''
+        self.celex = self.words.dutch_celex
+        try: self.celex_word = self.celex.get_word(self.word)
+        except KeyError: self.celex_word = None
 
     def _set_mald(self):
         self.is_word = self.d['word_status']
@@ -131,7 +168,8 @@ class Word:
 
     def _set_table(self):
         if not os.path.isfile(self.table_filename): return
-        self.table = Table(self.table_filename, self)
+        separator = ',' if self.dataset == 'coolest' else '\t'
+        self.table = Table(self.table_filename, self, separator = separator)
 
     def _make_mald_syllables(self):
         self.syllable_error = False
@@ -153,11 +191,19 @@ class Word:
     @property
     def audio_info(self):
         if hasattr(self,'_audio_info'): return self._audio_info
-        self.audio_info_filename = locations.mald_audio_infos
-        self.audio_info_filename += self.word.upper() + '.json'
-        self._audio_info = json.load(open(self.audio_info_filename))
-        self._audio_info['sample_rate'] = int(self._audio_info['sample_rate'])
-        self._audio_info['nchannels'] = int(self._audio_info['nchannels'])
+        if self.dataset == 'baldey': raise ValueError('not implemented')
+        elif self.dataset == 'coolest':
+            self._audio_info = []
+            ai = coolest.load_audio_info()
+            for audio_filename, audio_info in ai.items():
+                if coolest.filename_to_word(audio_filename) == self.word:
+                    self._audio_info.append( audio_info )
+        elif self.dataset == 'mald':
+            self.audio_info_filename = locations.mald_audio_infos
+            self.audio_info_filename += self.word.upper() + '.json'
+            self._audio_info = json.load(open(self.audio_info_filename))
+            self._audio_info['sample_rate']=int(self._audio_info['sample_rate'])
+            self._audio_info['nchannels'] = int(self._audio_info['nchannels'])
         return self._audio_info
 
     @property
@@ -170,6 +216,9 @@ class Word:
             to_ipa = self.phoneme_mapper.arpabet_to_ipa
             p = self.phoneme_transcription.split(' ')
             phonemes = [utils.remove_numeric(x) for x in p]
+        if self.dataset == 'coolest':
+            to_ipa = self.phoneme_mapper.sampa_to_ipa
+            phonemes = self.phoneme_transcription
         self._ipa = []
         for phoneme in phonemes:
             self._ipa.append( to_ipa[phoneme] )
@@ -190,11 +239,19 @@ class Word:
         return self._formants
             
 class Table:
-    def __init__(self, filename, word = None):
+    def __init__(self, filename, word = None, separator = '\t'):
         self.filename = filename
         self.word = word
-        self.table = open_table(filename)
+        if word: self.dataset = word.dataset
+        else: self.dataset = None
+        self.separator = separator
+        self.table = open_table(filename, separator = separator)
         self._make_phonemes()
+
+        self.n_phonemes = len(self.phonemes)
+        self.phonemes_list = [p.phoneme for p in self.phonemes]
+        self.phonemes_str = ' '.join(self.phonemes_list)
+
         if self.phonemes:
             self.start = self.phonemes[0].start_time
             self.end = self.phonemes[-1].end_time
@@ -207,22 +264,50 @@ class Table:
             self.ok = False 
             
     def __repr__(self):
-        m = 'table| ' + self.word.word + ' ' + str(round(self.duration,2))
+        if not self.word: word = ''
+        else: word = self.word.word
+        m = 'table| ' + word + ' ' + str(round(self.duration,2))
         return m
 
     def _make_phonemes(self):
+        if self.word:
+            speech_condition = self.word.d['speech_condition']
+        else: speech_condition = None
+        if self.dataset =='coolest' and speech_condition == 'sentence': 
+            return self._make_phonemes_coolest()
         self.phonemes = []
         phoneme_index = 0
         for line in self.table:
-            if line[1] not in  ['phone','segmentation']: continue
+            if line[1] not in  ['phone','segmentation','MAU']: continue
+            if self.dataset == 'coolest' and line[2] == '<p:>': continue
             # if line[2] == 'sp': continue
             phoneme = Phoneme(line, self, phoneme_index)
             if phoneme.phoneme == 'sp': continue
             self.phonemes.append(phoneme)
             phoneme_index += 1
-        self.n_phonemes = len(self.phonemes)
-        self.phonemes_list = [p.phoneme for p in self.phonemes]
-        self.phonemes_str = ' '.join(self.phonemes_list)
+
+    def _make_phonemes_coolest(self):
+        phoneme_code = 'MAU'
+        word_line,word_maus = coolest.get_word_line_in_table(self.table, 
+            self.word.word)
+        start, end = word_maus[0], word_maus[-1]
+        self.word_line, self.word_maus = word_line, word_maus
+        self.phonemes = []
+        self.syllable_lines = []
+        phoneme_index = 0
+        for line in self.table:
+            if 'Syll' in line[1] and line not in self.syllable_lines:
+                if line[0] < word_line[0] or line[-1] > word_line[-1]: 
+                    pass
+                else: self.syllable_lines.append(line)
+                continue
+            if line[1] != phoneme_code: continue
+            if line[2] == '<p:>': continue
+            if line[0] < start: continue
+            if line[-1] > end: continue
+            phoneme = Phoneme(line, self, phoneme_index)
+            self.phonemes.append(phoneme)
+            phoneme_index += 1
 
 class Syllable:
     def __init__(self, phonemes, stress, index, word, source):
@@ -331,7 +416,9 @@ class Phoneme:
         self.syllable_index = None
     
     def __repr__(self):
-        m = self.ipa.ljust(4) + '| '+ str(self.phoneme_index) + ' | '
+        if not self.ipa: m = self.phoneme + '='
+        else: m = self.ipa.ljust(4) 
+        m += '| '+ str(self.phoneme_index) + ' | '
         m += str(self.syllable_index) + ' | '
         m += str(self.stressed) + ' | '
         m += ' ' + str(round(self.start_time,2)).ljust(5) 
@@ -351,18 +438,22 @@ class Phoneme:
     @property
     def ipa(self):
         if self.line[1] == 'silence': return 'silence'
-        if self.table.word.dataset == 'mald':
+        if self.table.dataset == 'mald':
             d = self.table.word.phoneme_mapper.arpabet_to_ipa
-        else:
+        elif self.table.dataset == 'baldey':
+            d = self.table.word.phoneme_mapper.baldey_to_ipa
+        elif self.table.dataset == 'coolest':
             d = self.table.word.phoneme_mapper.baldey_to_ipa
         if self.phoneme in d.keys():
             return d[self.phoneme]
         
     @property
     def disc(self):
-        if self.table.word.dataset == 'mald':
+        if self.table.dataset == 'mald':
             d = self.table.word.phoneme_mapper.arpabet_to_disc
-        else:
+        elif self.table.dataset == 'baldey':
+            d = self.table.phoneme_mapper.baldey_to_disc
+        elif self.table.dataset == 'coolest':
             d = self.table.word.phoneme_mapper.baldey_to_disc
         if self.phoneme in d.keys():
             return d[self.phoneme]
@@ -437,13 +528,13 @@ class Phoneme:
         
         
 
-def open_table(filename):
+def open_table(filename, separator = '\t'):
     with open(filename) as fin:
         t = fin.read().split('\n')
     output = []
     for line in t[1:]:
         if not line: continue
-        line = line.split('\t')
+        line = line.split(separator)
         line[0] = float(line[0])
         line[-1] = float(line[-1])
         output.append(line)
