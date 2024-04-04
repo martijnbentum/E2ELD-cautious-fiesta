@@ -63,3 +63,5 @@ coolest_wordset_filename = coolest + 'word_set.txt'
 coolest_prompts_filename = coolest + 'prompts.csv'
 coolest_word_data_filename = coolest + 'coolest_word_data.tsv'
 coolest_word_header_filename = coolest + 'coolest_word_header.tsv'
+
+cv_polish = '../COMMON_VOICE_POLISH/'
