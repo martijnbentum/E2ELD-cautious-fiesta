@@ -270,7 +270,7 @@ class Table:
         return m
 
     def _make_phonemes(self):
-        if self.word:
+        if self.word and 'speech_condition' in self.word.d.keys():
             speech_condition = self.word.d['speech_condition']
         else: speech_condition = None
         if self.dataset =='coolest' and speech_condition == 'sentence': 
