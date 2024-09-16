@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 
 
 def handle_vowel(word, vowel):
-    '''compute the power in four frequency bands and convert to decibels
-    for a specific vowel in a word.
+    '''compute the pitch for a specific vowel in a word.
     word        word class object from word module
     phoneme     phoneme class object from word module
     '''
