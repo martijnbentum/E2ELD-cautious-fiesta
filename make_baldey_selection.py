@@ -10,7 +10,53 @@ import json
 
 stress_dir ='/Users/martijn.bentum/Documents/indeep/stress/'
 
+def analyze_annotations(annotator, directory = '', output_filename = '',
+    save = False):
+    '''Analyze the annotations of an annotator and return the results in a json.
+    annotator: str, the name of the annotator
+    directory: str, the directory where the annotations are stored
+    output_filename: str, the filename where the output should be stored
+    '''
+    if not directory:
+        p = Path(stress_dir + 'baldey_annotate/recordings/')
+    else: p = Path(directory)
+    output = []
+    for filename in p.glob('*.TextGrid'):
+        output.append(_analyze_annotation(annotator, filename))
+    if save:
+        if not output_filename:
+            output_filename = p / f'../{annotator}_annotations.json'
+        print('Saving to', output_filename)
+        with open(output_filename, 'w') as f:
+            json.dump(output, f)
+    return output
+
+def make_baldey_selection(n = 100, n_syllables = 2, filename = '', 
+    goal_dir = '', w = None, exclude_word_list = []):
+    '''Select n words and n non-words from the baldey dataset 
+    and write them to a file.
+    n: int, the number of words and non-words to select
+    n_syllables: int, the number of syllables the words 
+        and non-words should have
+    filename: str, the name of the file where the output should be stored
+    goal_dir: str, the directory where the output should be stored
+    w: Words object, the object containing the words from the baldey dataset
+    exclude_word_list: list, a list of words that should be excluded from the
+        selection
+    '''
+    if not w: 
+        w = word.Words()
+    if not filename:
+        filename = f'baldey_syl-{n_syllables}_word-{n}.txt'
+    if not goal_dir: goal_dir = '/Users/martijn.bentum/baldey_annotate/'
+    words, non_words = select_words_nonwords(n = n, n_syllables = n_syllables,
+        w = w, exclude_word_list = exclude_word_list)
+    dataset = write_to_file(words, non_words, goal_dir + filename)
+    copy_audio_files_words(words + non_words, goal_dir + 'recordings/')
+    return dataset
+
 def word_to_vowels(word):
+    '''Return a list of vowels in a word; word is a Word object (word.py).'''
     output = []
     for phoneme in word.table.phonemes:
         if phoneme.ipa is None: continue
@@ -19,25 +65,57 @@ def word_to_vowels(word):
     return output
 
 def load_dataset(filename = ''):
+    '''Load the dataset from a file created with make_baldey_selection.'''
     if not filename:
         filename = stress_dir + 'baldey_annotate/'
-        filename += 'baldey_syl-2_word-100.txt'
+        filename += 'baldey_syl-2_word-combined.txt'
     with open(filename, 'r') as f:
         output = [line.split('\t') for line in f.read().split('\n')]
-    return output
-    
+    return output, filename
 
 def dataset_to_words(dataset_filename = '', w = None):
-    ds = load_dataset(dataset_filename)
+    '''Add the word objects to the dataset.
+    dataset_filename: str, name of the dataset
+    w: Words object, the object containing the words from the baldey dataset
+    '''
+    ds, dataset_filename = load_dataset(dataset_filename)
     output = []
     for line in ds:
+        if not line or line == ['']: continue
         word = w.get_word(line[0])
         word = [x for x in word if x.dataset == 'baldey']
         if len(word) > 1:
-            print('Warning: multiple words found for', line[0])
+            print('Warning: multiple words found for', word)
         line.append(word[0])
         output.append(line)
-    return ds
+    return ds ,dataset_filename
+
+def add_vowel_times_to_dataset(dataset_filename = '', w = None, save = False):
+    '''Add the vowel times to the dataset.
+    '''
+    ds, dataset_filename = dataset_to_words(dataset_filename, w)
+    output = []
+    for line in ds:
+        if not line or line == ['']: continue
+        word = line[-1]
+        output_line = line[:-1]
+        if not word: continue
+        vowels = word_to_vowels(word)
+        for vowel in vowels:
+            output_line.append(vowel_to_info(vowel))
+        output.append(output_line)
+    if save:
+        filename = dataset_filename.split('.txt')[0] + '_vowels.txt'
+        with open(filename, 'w') as f:
+            f.write('\n'.join(['\t'.join(line) for line in output]))
+    return output
+
+def vowel_to_info(vowel):
+    '''Return a string with the information of a vowel.'''
+    output = vowel.ipa + ',' + str(vowel.start_time) + ',' 
+    output += str(vowel.end_time) 
+    return output
+    
 
 
 
@@ -61,36 +139,6 @@ def _analyze_annotation(annotator,annotation_filename = ''):
         if word and annotation:
             return [annotator,word, annotation]
 
-def analyze_annotations(annotator, directory = '', output_filename = '',
-    save = False):
-    if not directory:
-        p = Path(stress_dir + 'baldey_annotate/recordings/')
-    else: p = Path(directory)
-    output = []
-    for filename in p.glob('*.TextGrid'):
-        output.append(_analyze_annotation(annotator, filename))
-    if save:
-        if not output_filename:
-            output_filename = p / f'../{annotator}_annotations.json'
-        print('Saving to', output_filename)
-        with open(output_filename, 'w') as f:
-            json.dump(output, f)
-    return output
-
-
-
-def make_baldey_selection(n = 100, n_syllables = 2, filename = '', 
-    goal_dir = '', w = None, exclude_word_list = []):
-    if not w: 
-        w = word.Words()
-    if not filename:
-        filename = f'baldey_syl-{n_syllables}_word-{n}.txt'
-    if not goal_dir: goal_dir = '/Users/martijn.bentum/baldey_annotate/'
-    words, non_words = select_words_nonwords(n = n, n_syllables = n_syllables,
-        w = w, exclude_word_list = exclude_word_list)
-    dataset = write_to_file(words, non_words, goal_dir + filename)
-    copy_audio_files_words(words + non_words, goal_dir + 'recordings/')
-    return dataset
 
 
 def copy_audio_files_words(words, goal_dir):
