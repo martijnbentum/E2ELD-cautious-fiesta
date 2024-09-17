@@ -3,14 +3,19 @@ import ipasymbols
 import gruut_ipa
 
 vowels = ipasymbols.phonlist(query={'type':'vowel'})
+vowels.append('oː')
 vowels.append('ɔː') 
+vowels.append('øː')
+vowels.append('eː') 
 vowels.append('ɪə') 
 vowels.append('ʊə') 
 vowels.append('ɛə') 
 vowels.append('oʊ') 
 vowels.append('ɑː') 
+vowels.append('aː') 
 vowels.append('əʊ') 
 vowels.append('ai')
+vowels.append('ɛi')
 vowels.append('ei')
 vowels.append('eɪ')
 vowels.append('ɜː')
@@ -22,6 +27,8 @@ vowels.append('aʊ')
 vowels.append('ɑ̃ː')
 vowels.append('iː')
 vowels.append('ɑu')
+vowels.append('œy')
+vowels.append('yː')
 
 
 consonants = ipasymbols.phonlist(query={'type': ["pulmonic", "non-pulmonic"]})
